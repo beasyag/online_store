@@ -3,18 +3,18 @@ from django.contrib.sessions.models import Session
 from main.models import Product, ProductSize
 from decimal import Decimal
 
+
 class Cart(models.Model):
-    session_key = models.CharField(max_length=42, unique=True)
+    session_key = models.CharField(max_length=40, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Cart {self.session_key}"
 
-
     @property
     def total_items(self):
-        return sum(item.quatity for item in self.items.all())
+        return sum(item.quantity for item in self.items.all())
 
     @property
     def subtotal(self):
@@ -25,9 +25,7 @@ class Cart(models.Model):
             cart=self,
             product=product,
             product_size=product_size,
-            defaults={
-                'quantity': quantity,
-            }
+            defaults={'quantity': quantity}
         )
 
         if not created:
@@ -49,19 +47,19 @@ class Cart(models.Model):
             item = self.items.get(id=item_id)
             if quantity > 0:
                 item.quantity = quantity
-                item.save()
+                item.sav()
             else:
                 item.delete()
-                return True
+            return True
         except CartItem.DoesNotExist:
             return False
-
 
     def clear(self):
         self.items.all().delete()
 
+
 class CartItem(models.Model):
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
+    cart = models.ForeignKey(Cart, related_name='items', on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     product_size = models.ForeignKey(ProductSize, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
@@ -73,13 +71,6 @@ class CartItem(models.Model):
     def __str__(self):
         return f"{self.product.name} - {self.product_size.size.name} x {self.quantity}"
 
-
     @property
     def total_price(self):
-        return Decimal(str(self.product.price) * self.quantity)
-
-
-
-
-
-# Create your models here.
+        return Decimal(str(self.product.price)) * self.quantity
