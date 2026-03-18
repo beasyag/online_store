@@ -1,5 +1,4 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -109,7 +108,7 @@
         }
     </style>
 </head>
-<body class="bg-white">
+<body class="bg-white" hx-boost="true">
     <!-- Mobile Menu Overlay -->
     <div id="overlay" class="overlay fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"></div>
 
@@ -210,7 +209,7 @@
                     <a href="{% url 'users:profile' %}"
                        hx-get="{% url 'users:profile' %}"
                        hx-target="#main-content"
-                       hx-push-url="true" 
+                       hx-push-url="true"
                        class="text-sm font-medium text-gray-900 uppercase hover:text-gray-600">
                         ACCOUNT
                     </a>
@@ -235,7 +234,7 @@
         <!-- Default home content -->
         <main class="mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="text-center py-20">
-                <h2 class="text-4xl font-bold tracking-tight text-gray-900 mb-4">
+<!--                <h2 class="text-4xl font-bold tracking-tight text-gray-900 mb-4">
                     MAIN
                 </h2>
                 <p class="text-lg text-gray-600 mb-8">
@@ -251,7 +250,7 @@
                         <h3 class="text-xl font-bold">{{ category.name|upper }}</h3>
                     </a>
                     {% endfor %}
-                </div>
+                </div>-->
             </div>
         </main>
         {% endblock %}

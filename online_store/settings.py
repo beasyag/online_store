@@ -42,6 +42,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.github',
 
     'main',
     'cart',
@@ -49,6 +54,12 @@ INSTALLED_APPS = [
     'orders',
     'payment',
 ]
+
+AUTHENTICATION_BACKENDS = [
+
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -58,6 +69,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 
     'cart.middleware.CartMiddleware',
 ]
@@ -80,8 +92,47 @@ TEMPLATES = [
     },
 ]
 
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': os.getenv('GOOGLE_CLIENT_ID'),
+            'secret': os.getenv('GOOGLE_CLIENT_SECRET'),
+        },
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+        'METHOD': 'oauth2',
+        'VERIFIED_EMAIL': True,
+    },
+    'github': {
+        'APP': {
+            'client_id': os.getenv('GITHUB_CLIENT_ID'),
+            'secret': os.getenv('GITHUB_CLIENT_SECRET'),
+        }
+    }
+}
+
+SOCIALACCOUNT_LOGIN_ON_GET=True
+LOGIN_REDIRECT_URL = 'login'
+LOGIN_URL = 'login'
+SOCIALACCOUNT_AUTO_SIGNUP = True
 WSGI_APPLICATION = 'online_store.wsgi.application'
 
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# allauth settings (добавь или измени в конце settings.py)
+
+# Указываем, что в CustomUser нет поля username
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+
+ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
+
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+
+# Опционально: если хочешь, чтобы email был уникальным и верифицировался
+ACCOUNT_EMAIL_VERIFICATION = 'none'  # или 'optional' / None
+ACCOUNT_UNIQUE_EMAIL = True
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases

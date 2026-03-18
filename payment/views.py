@@ -23,7 +23,7 @@ def create_stripe_checkout_session(order, request):
     for item in cart.items.select_related('product', 'product_size'):
         line_items.append({
             'price_data': {
-                'currency': 'eur',
+                'currency': 'usd',
                 'product_data': {
                     'name': f'{item.product.name} - {item.product_size.size.name}',
                 },
@@ -38,7 +38,7 @@ def create_stripe_checkout_session(order, request):
             line_items=line_items,
             mode='payment',
             success_url=request.build_absolute_uri('/payment/stripe/success/') + '?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url=request.build_absolute_uri('/payment/stripe/cancel/') + f'order_id={order.id}',
+            cancel_url=request.build_absolute_uri('/payment/stripe/cancel/') + f'?order_id={order.id}',
             metadata={
                 'order_id': order.id,
             }
@@ -103,7 +103,7 @@ def stripe_cancel(request):
     order_id = request.GET.get('order_id')
     if order_id:
         order = get_object_or_404(Order, id=order_id)
-        order.status = 'canceled'
+        order.status = 'cancelled'
         order.save()
         context = {'order': order}
         if request.headers.get('HX-Request'):

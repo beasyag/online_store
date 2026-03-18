@@ -47,7 +47,7 @@ class Cart(models.Model):
             item = self.items.get(id=item_id)
             if quantity > 0:
                 item.quantity = quantity
-                item.sav()
+                item.save()
             else:
                 item.delete()
             return True

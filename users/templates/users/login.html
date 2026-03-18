@@ -1,4 +1,4 @@
-
+{% load socialaccount %}
 {% block content %}
 <style>
     .dotted-input {
@@ -30,7 +30,32 @@
                 {% endfor %}
             </div>
         {% endif %}
-        
+
+        <!-- Социальный вход -->
+        <div class="space-y-4 mb-8">
+            <a href="{% provider_login_url 'google' %}"
+               class="flex items-center justify-center gap-3 w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 font-medium py-3 px-4 rounded-lg transition-all shadow-sm hover:shadow">
+                <img src="https://playtht-website-assets.s3.amazonaws.com/img/brand/google.svg" alt="Google" class="h-5 w-5">
+                Log in with Google
+            </a>
+
+            <a href="{% provider_login_url 'github' %}"
+               class="flex items-center justify-center gap-3 w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-lg transition-all shadow-sm hover:shadow">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" alt="GitHub" class="h-5 w-5 invert">
+                Log in with GitHub
+            </a>
+        </div>
+
+        <!-- Разделитель -->
+        <div class="relative my-6">
+            <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-gray-300"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+                <span class="px-4 bg-white text-gray-500">or</span>
+            </div>
+        </div>
+
         <form id="loginForm" method="post" class="space-y-6" 
               hx-post="{% url 'users:login' %}" 
               hx-target="#main-content">

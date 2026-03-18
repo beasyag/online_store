@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
@@ -9,7 +9,7 @@ from .forms import CustomUserCreationForm, CustomUserLoginForm, \
 from .models import CustomUser
 from django.contrib import messages
 from main.models import Product
-
+from orders.models import Order
 
 def register(request):
     if request.method == 'POST':
@@ -27,11 +27,24 @@ def login_view(request):
     if request.method == 'POST':
         form = CustomUserLoginForm(request=request, data=request.POST)
         if form.is_valid():
-            user = form.get_user()
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            return redirect('main:index')
+            # Здесь главное исправление
+            email = form.cleaned_data.get('username')  # ← если в форме поле называется username (чаще всего)
+            # или email = form.cleaned_data.get('email')  # если поле в форме называется email
+
+            password = form.cleaned_data.get('password')
+            user = authenticate(request, email=email, password=password)
+
+            if user is not None:
+                login(request, user)  # backend можно убрать — Django сам подберёт
+                messages.success(request, "Вы успешно вошли в систему")
+                return redirect('main:index')
+            else:
+                messages.error(request, "Неверный email или пароль")
+        else:
+            messages.error(request, "Форма заполнена с ошибками")
     else:
         form = CustomUserLoginForm()
+
     return render(request, 'users/login.html', {'form': form})
 
 
@@ -48,6 +61,13 @@ def profile_view(request):
         form = CustomUserUpdateForm(instance=request.user)
 
     recommended_products = Product.objects.all().order_by('id')[:3]
+
+    if request.headers.get('HX-Request'):
+        return TemplateResponse(request, 'users/partials/profile_content.html', {
+            'form': form,
+            'user': request.user,
+            'recommended_products': recommended_products
+        })
 
     return TemplateResponse(request, 'users/profile.html', {
         'form': form,
@@ -95,3 +115,13 @@ def logout_view(request):
     if request.headers.get('HX-Request'):
         return HttpResponse(headers={'HX-Redirect': reverse('main:index')})
     return redirect('main:index')
+
+@login_required
+def order_history(request):
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    return TemplateResponse(request, 'users/partials/order_history.html', {'orders': orders})
+
+@login_required
+def order_detail(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    return TemplateResponse(request, 'users/partials/order_detail.html', {'order': order})
