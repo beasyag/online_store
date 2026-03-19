@@ -1,0 +1,51 @@
+{% extends "main/base.html" %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-8">
+    <div class="flex items-center gap-4 mb-8 pb-6 border-b border-gray-100">
+        <a href="{% url 'chat:list' %}"
+           class="text-xs tracking-wide uppercase text-gray-400 hover:text-gray-900">← Back</a>
+        <div>
+            <p class="text-xs tracking-[0.2em] uppercase text-gray-400">Conversation with</p>
+            <h1 class="text-lg font-medium">{{ conversation.seller.shop_name }}</h1>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="space-y-4 mb-8 min-h-64" id="messages">
+        {% for message in messages %}
+        <div class="flex {% if message.sender == request.user %}justify-end{% endif %}">
+            <div class="max-w-sm">
+                <div class="{% if message.sender == request.user %}bg-black text-white{% else %}bg-gray-100 text-gray-900{% endif %} px-4 py-3 text-sm">
+                    {{ message.text }}
+                </div>
+                <p class="text-xs text-gray-400 mt-1
+                   {% if message.sender == request.user %}text-right{% endif %}">
+                    {{ message.created_at|date:"H:i" }}
+                </p>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-12">
+            <p class="text-sm text-gray-400">Start the conversation.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Send Message -->
+    <form method="post"
+          action="{% url 'chat:send' conversation.id %}"
+          class="flex gap-3 border-t border-gray-100 pt-6">
+        {% csrf_token %}
+        <input type="text"
+               name="text"
+               placeholder="Write a message..."
+               autocomplete="off"
+               class="flex-1 border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-black">
+        <button type="submit"
+                class="bg-black text-white px-6 py-3 text-xs tracking-[0.2em] uppercase hover:bg-gray-800 transition-colors">
+            Send
+        </button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "main/base.html" %}
+
+{% block content %}
+<div class="min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-8">
+
+            <!-- Sidebar -->
+            <div class="col-span-1">
+                <div class="border border-gray-100 p-6">
+                    <p class="text-xs tracking-[0.3em] uppercase text-gray-400 mb-6">
+                        {{ seller.shop_name }}
+                    </p>
+                    <nav class="space-y-4">
+                        <a href="{% url 'sellers:dashboard' %}"
+                           class="block text-sm tracking-wide uppercase hover:text-gray-600
+                           {% if request.resolver_match.url_name == 'dashboard' %}font-medium{% else %}text-gray-500{% endif %}">
+                            Dashboard
+                        </a>
+                        <a href="{% url 'sellers:products' %}"
+                           class="block text-sm tracking-wide uppercase hover:text-gray-600
+                           {% if 'product' in request.resolver_match.url_name %}font-medium{% else %}text-gray-500{% endif %}">
+                            Products
+                        </a>
+                        <a href="{% url 'sellers:orders' %}"
+                           class="block text-sm tracking-wide uppercase hover:text-gray-600
+                           {% if 'order' in request.resolver_match.url_name %}font-medium{% else %}text-gray-500{% endif %}">
+                            Orders
+                        </a>
+                        <a href="{% url 'sellers:analytics' %}"
+                           class="block text-sm tracking-wide uppercase hover:text-gray-600
+                           {% if request.resolver_match.url_name == 'analytics' %}font-medium{% else %}text-gray-500{% endif %}">
+                            Analytics
+                        </a>
+                        <a href="{% url 'payouts:list' %}"
+                           class="block text-sm tracking-wide uppercase hover:text-gray-600 text-gray-500">
+                            Payouts
+                        </a>
+                        <div class="border-t border-gray-100 pt-4">
+                            <a href="{% url 'sellers:shop' seller.shop_slug %}"
+                               class="block text-sm tracking-wide uppercase text-gray-400 hover:text-gray-600">
+                                View Shop →
+                            </a>
+                        </div>
+                    </nav>
+                </div>
+
+                {% if seller.status == 'pending' %}
+                <div class="mt-4 border border-gray-200 p-4">
+                    <p class="text-xs text-gray-500 tracking-wide">
+                        Your account is pending verification.
+                    </p>
+                </div>
+                {% elif seller.status == 'rejected' %}
+                <div class="mt-4 border border-red-200 p-4">
+                    <p class="text-xs text-red-500 tracking-wide">
+                        Your account was rejected.
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Main content -->
+            <div class="col-span-4">
+                {% block seller_content %}{% endblock %}
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "sellers/base.html" %}
+
+{% block seller_content %}
+<div class="mb-10">
+    <p class="text-xs tracking-[0.3em] uppercase text-gray-400 mb-1">Finance</p>
+    <h1 class="text-2xl font-medium tracking-tight">Payouts</h1>
+</div>
+
+<!-- Balance -->
+<div class="border border-gray-100 p-6 mb-10">
+    <div class="flex justify-between items-center">
+        <div>
+            <p class="text-xs tracking-[0.2em] uppercase text-gray-400 mb-1">Available Balance</p>
+            <p class="text-3xl font-medium">€{{ seller.balance|floatformat:2 }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Request Payout Form -->
+{% if seller.balance > 0 %}
+<div class="border border-gray-100 p-6 mb-10">
+    <p class="text-xs tracking-[0.2em] uppercase text-gray-400 mb-6">Request Payout</p>
+    <form method="post" action="{% url 'payouts:request' %}" class="flex gap-4 items-end">
+        {% csrf_token %}
+        <div class="flex-1">
+            <label class="block text-xs tracking-[0.2em] uppercase text-gray-500 mb-2">Amount (€)</label>
+            <input type="number"
+                   name="amount"
+                   step="0.01"
+                   max="{{ seller.balance }}"
+                   placeholder="0.00"
+                   class="w-full border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-black">
+        </div>
+        <div class="flex-1">
+            <label class="block text-xs tracking-[0.2em] uppercase text-gray-500 mb-2">Payment Method</label>
+            <input type="text"
+                   name="payment_method"
+                   placeholder="Bank / PayPal / etc."
+                   class="w-full border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-black">
+        </div>
+        <button type="submit"
+                class="bg-black text-white px-8 py-3 text-xs tracking-[0.2em] uppercase hover:bg-gray-800 transition-colors whitespace-nowrap">
+            Request
+        </button>
+    </form>
+</div>
+{% endif %}
+
+<!-- Payout History -->
+<p class="text-xs tracking-[0.3em] uppercase text-gray-400 mb-6">History</p>
+{% if payouts %}
+<div class="border border-gray-100">
+    <div class="grid grid-cols-4 gap-4 px-6 py-3 border-b border-gray-100">
+        <p class="text-xs tracking-[0.2em] uppercase text-gray-400">ID</p>
+        <p class="text-xs tracking-[0.2em] uppercase text-gray-400">Amount</p>
+        <p class="text-xs tracking-[0.2em] uppercase text-gray-400">Method</p>
+        <p class="text-xs tracking-[0.2em] uppercase text-gray-400">Status</p>
+    </div>
+    {% for payout in payouts %}
+    <div class="grid grid-cols-4 gap-4 px-6 py-4 border-b border-gray-50">
+        <p class="text-sm text-gray-500">#{{ payout.id }}</p>
+        <p class="text-sm">€{{ payout.amount|floatformat:2 }}</p>
+        <p class="text-sm text-gray-500">{{ payout.payment_method|default:"—" }}</p>
+        <p class="text-xs tracking-wide uppercase
+           {% if payout.status == 'completed' %}text-green-600
+           {% elif payout.status == 'failed' %}text-red-500
+           {% elif payout.status == 'processing' %}text-blue-500
+           {% else %}text-gray-500{% endif %}">
+            {{ payout.status }}
+        </p>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="border border-gray-100 p-12 text-center">
+    <p class="text-sm text-gray-400">No payouts yet.</p>
+</div>
+{% endif %}
+{% endblock %}

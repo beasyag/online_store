@@ -1,0 +1,50 @@
+{% extends "sellers/base.html" %}
+
+{% block seller_content %}
+<div class="mb-10">
+    <p class="text-xs tracking-[0.3em] uppercase text-gray-400 mb-1">Overview</p>
+    <h1 class="text-2xl font-medium tracking-tight">Analytics</h1>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
+    <div class="border border-gray-100 p-6">
+        <p class="text-xs tracking-[0.2em] uppercase text-gray-400 mb-3">Total Revenue</p>
+        <p class="text-3xl font-medium">€{{ total_revenue|floatformat:2 }}</p>
+    </div>
+    <div class="border border-gray-100 p-6">
+        <p class="text-xs tracking-[0.2em] uppercase text-gray-400 mb-3">Total Orders</p>
+        <p class="text-3xl font-medium">{{ total_orders }}</p>
+    </div>
+    <div class="border border-gray-100 p-6">
+        <p class="text-xs tracking-[0.2em] uppercase text-gray-400 mb-3">Products Listed</p>
+        <p class="text-3xl font-medium">{{ total_products }}</p>
+    </div>
+</div>
+
+<div class="mb-10">
+    <p class="text-xs tracking-[0.3em] uppercase text-gray-400 mb-6">Sales by Product</p>
+    <div class="border border-gray-100">
+        <div class="grid grid-cols-3 gap-4 px-6 py-3 border-b border-gray-100">
+            <p class="text-xs tracking-[0.2em] uppercase text-gray-400 col-span-2">Product</p>
+            <p class="text-xs tracking-[0.2em] uppercase text-gray-400">Revenue</p>
+        </div>
+        {% regroup order_items by product_name as product_groups %}
+        {% for group in product_groups %}
+        <div class="grid grid-cols-3 gap-4 px-6 py-4 border-b border-gray-50">
+            <p class="text-sm col-span-2">{{ group.grouper }}</p>
+            <p class="text-sm">
+                €{% with total=0 %}
+                {% for item in group.list %}
+                {{ item.seller_amount|add:total }}
+                {% endfor %}
+                {% endwith %}
+            </p>
+        </div>
+        {% empty %}
+        <div class="px-6 py-12 text-center">
+            <p class="text-sm text-gray-400">No sales data yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

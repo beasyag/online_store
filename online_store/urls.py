@@ -26,6 +26,10 @@ urlpatterns = [
     path('orders/', include('orders.urls', namespace='orders')),
     path('payment/', include('payment.urls', namespace='payment')),
     path('accounts/', include('allauth.urls')),
+    path('sellers/', include('sellers.urls', namespace='sellers')),
+    path('reviews/', include('reviews.urls', namespace='reviews')),
+    path('chat/', include('chat.urls', namespace='chat')),
+    path('payouts/', include('payouts.urls', namespace='payouts')),
     path('', include('main.urls', namespace='main')),
 ]
 

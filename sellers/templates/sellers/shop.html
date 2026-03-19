@@ -1,0 +1,90 @@
+{% extends "main/base.html" %}
+
+{% block content %}
+<main class="mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Shop Header -->
+    <div class="border-b border-gray-100 pb-10 mb-10">
+        <div class="flex items-center gap-6">
+            {% if seller.logo %}
+            <img src="{{ seller.logo.url }}"
+                 class="w-20 h-20 object-cover bg-gray-100">
+            {% else %}
+            <div class="w-20 h-20 bg-gray-100 flex items-center justify-center">
+                <p class="text-xl font-medium text-gray-400">
+                    {{ seller.shop_name|first|upper }}
+                </p>
+            </div>
+            {% endif %}
+            <div>
+                <p class="text-xs tracking-[0.3em] uppercase text-gray-400 mb-1">Shop</p>
+                <h1 class="text-3xl font-medium tracking-tight">{{ seller.shop_name }}</h1>
+                {% if seller.description %}
+                <p class="text-sm text-gray-500 mt-2 max-w-xl">{{ seller.description }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if request.user.is_authenticated and request.user != seller.user %}
+        <div class="mt-6">
+            <a href="{% url 'chat:start' seller.shop_slug %}"
+               class="inline-block border border-gray-300 px-6 py-2 text-xs tracking-[0.2em] uppercase hover:bg-black hover:text-white hover:border-black transition-colors">
+                Message Seller
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Products -->
+    <p class="text-xs tracking-[0.3em] uppercase text-gray-400 mb-8">
+        {{ products.count }} Product{{ products.count|pluralize }}
+    </p>
+
+    {% if products %}
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+        {% for product in products %}
+        <div class="group cursor-pointer"
+             hx-get="{% url 'main:product_detail' product.slug %}"
+             hx-target="#main-content"
+             hx-push-url="true">
+            <div class="aspect-[3/4] overflow-hidden bg-gray-100 mb-3">
+                {% if product.main_image %}
+                <img src="{{ product.main_image.url }}"
+                     alt="{{ product.name }}"
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                {% endif %}
+            </div>
+            <p class="text-xs tracking-[0.1em] uppercase font-medium mb-1">{{ product.name }}</p>
+            <p class="text-xs text-gray-500">€{{ product.price }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-20">
+        <p class="text-sm text-gray-400">No products available.</p>
+    </div>
+    {% endif %}
+
+    <!-- Reviews -->
+    {% if seller.reviews.exists %}
+    <div class="mt-16 border-t border-gray-100 pt-16">
+        <p class="text-xs tracking-[0.3em] uppercase text-gray-400 mb-8">Reviews</p>
+        <div class="space-y-6">
+            {% for review in seller.reviews.all %}
+            <div class="border-b border-gray-50 pb-6">
+                <div class="flex items-center gap-3 mb-2">
+                    <p class="text-sm font-medium">{{ review.user.first_name }}</p>
+                    <p class="text-xs text-gray-400">{{ review.created_at|date:"F d, Y" }}</p>
+                    <p class="text-xs text-gray-500">{{ review.rating }}★</p>
+                </div>
+                {% if review.comment %}
+                <p class="text-sm text-gray-600">{{ review.comment }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</main>
+{% endblock %}
