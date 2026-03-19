@@ -1,0 +1,67 @@
+{% extends "sellers/base.html" %}
+
+{% block seller_content %}
+<div class="mb-10">
+    <p class="text-xs tracking-[0.3em] uppercase text-gray-400 mb-1">
+        {% if product %}Edit{% else %}New{% endif %}
+    </p>
+    <h1 class="text-2xl font-medium tracking-tight">
+        {% if product %}{{ product.name }}{% else %}Add Product{% endif %}
+    </h1>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="max-w-xl space-y-6">
+    {% csrf_token %}
+
+    <div>
+        <label class="block text-xs tracking-[0.2em] uppercase text-gray-500 mb-2">Name</label>
+        {{ form.name }}
+        {% if form.name.errors %}<p class="text-xs text-red-500 mt-1">{{ form.name.errors }}</p>{% endif %}
+    </div>
+
+    <div>
+        <label class="block text-xs tracking-[0.2em] uppercase text-gray-500 mb-2">Category</label>
+        {{ form.category }}
+        {% if form.category.errors %}<p class="text-xs text-red-500 mt-1">{{ form.category.errors }}</p>{% endif %}
+    </div>
+
+    <div>
+        <label class="block text-xs tracking-[0.2em] uppercase text-gray-500 mb-2">Color</label>
+        {{ form.color }}
+        {% if form.color.errors %}<p class="text-xs text-red-500 mt-1">{{ form.color.errors }}</p>{% endif %}
+    </div>
+
+    <div>
+        <label class="block text-xs tracking-[0.2em] uppercase text-gray-500 mb-2">Price (€)</label>
+        {{ form.price }}
+        {% if form.price.errors %}<p class="text-xs text-red-500 mt-1">{{ form.price.errors }}</p>{% endif %}
+    </div>
+
+    <div>
+        <label class="block text-xs tracking-[0.2em] uppercase text-gray-500 mb-2">Description</label>
+        {{ form.description }}
+        {% if form.description.errors %}<p class="text-xs text-red-500 mt-1">{{ form.description.errors }}</p>{% endif %}
+    </div>
+
+    <div>
+        <label class="block text-xs tracking-[0.2em] uppercase text-gray-500 mb-2">Main Image</label>
+        {% if product and product.main_image %}
+        <img src="{{ product.main_image.url }}"
+             class="w-32 h-32 object-cover mb-3 bg-gray-100">
+        {% endif %}
+        {{ form.main_image }}
+        {% if form.main_image.errors %}<p class="text-xs text-red-500 mt-1">{{ form.main_image.errors }}</p>{% endif %}
+    </div>
+
+    <div class="flex gap-4 pt-4">
+        <button type="submit"
+                class="bg-black text-white px-8 py-3 text-xs tracking-[0.2em] uppercase hover:bg-gray-800 transition-colors">
+            {% if product %}Save Changes{% else %}Add Product{% endif %}
+        </button>
+        <a href="{% url 'sellers:products' %}"
+           class="border border-gray-300 px-8 py-3 text-xs tracking-[0.2em] uppercase hover:border-gray-900 transition-colors">
+            Cancel
+        </a>
+    </div>
+</form>
+{% endblock %}

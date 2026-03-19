@@ -13,4 +13,6 @@ urlpatterns = [
     path('order-history/', views.order_history, name='order_history'),
     path('order/<int:order_id>/', views.order_detail, name='order_detail'),
     path('logout/', views.logout_view, name='logout'),
+    path('orders/', views.order_history, name='order_history'),           # ← добавить
+    path('orders/<int:order_id>/', views.order_detail, name='order_detail'),
 ]

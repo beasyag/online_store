@@ -1,13 +1,11 @@
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from django.views.generic import View
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.template.response import TemplateResponse
-from django.contrib import messages
 from django.db import transaction
 from main.models import Product, ProductSize
 from .models import Cart, CartItem
 from .forms import AddToCartForm
-import json
 
 
 class CartMixin:
@@ -92,14 +90,22 @@ class AddToCartView(CartMixin, View):
         request.session.modified = True
 
         if request.headers.get('HX-Request'):
-            return redirect('cart:cart_modal')
-        else:
-            return JsonResponse({
-                'success': True,
-                'total_items': cart.total_items,
-                'message': f"{product.name} added to cart",
-                'cart_item_id': cart_item.id
-            })
+            # ← возвращаем шаблон напрямую, а не redirect
+            context = {
+                'cart': cart,
+                'cart_items': cart.items.select_related(
+                    'product',
+                    'product_size__size'
+                ).order_by('-added_at')
+            }
+            return TemplateResponse(request, 'cart/cart_modal.html', context)
+
+        return JsonResponse({
+            'success': True,
+            'total_items': cart.total_items,
+            'message': f"{product.name} added to cart",
+            'cart_item_id': cart_item.id
+        })
 
 
 class UpdateCartItemView(CartMixin, View):
@@ -182,7 +188,7 @@ class ClearCartView(CartMixin, View):
                 'cart': cart
             })
         return JsonResponse({
-            'succes': True,
+            'success': True,  # ← исправлена опечатка
             'message': 'Cart cleared'
         })
 

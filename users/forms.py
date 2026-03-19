@@ -45,7 +45,7 @@ class CustomUserLoginForm(AuthenticationForm):
     )
 
     def clean(self):
-        email = self.cleaned_data.get('email')
+        email = self.cleaned_data.get('username')
         password = self.cleaned_data.get('password')
 
         if email and password:

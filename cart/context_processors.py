@@ -1,3 +1,4 @@
+from main.models import Category
 from .models import Cart
 
 def cart_processor(request):
@@ -9,4 +10,5 @@ def cart_processor(request):
     return {
         'cart_total_items': cart.total_items,
         'cart_subtotal' : cart.subtotal,
+        'categories' : Category.objects.all(),
     }

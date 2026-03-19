@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.sessions.models import Session
 from main.models import Product, ProductSize
 from decimal import Decimal
 
@@ -14,11 +13,17 @@ class Cart(models.Model):
 
     @property
     def total_items(self):
-        return sum(item.quantity for item in self.items.all())
+        return self.items.aggregate(
+            total=models.Sum('quantity')
+        )['total'] or 0
 
     @property
     def subtotal(self):
-        return sum(item.total_price for item in self.items.all())
+        items = self.items.select_related('product')
+        return sum(
+            Decimal(str(item.product.price)) * item.quantity
+            for item in items
+        )
 
     def add_product(self, product, product_size, quantity=1):
         cart_item, created = CartItem.objects.get_or_create(

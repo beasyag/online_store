@@ -1,0 +1,41 @@
+{% extends "sellers/base.html" %}
+
+{% block seller_content %}
+<div class="mb-10">
+    <p class="text-xs tracking-[0.3em] uppercase text-gray-400 mb-1">Manage</p>
+    <h1 class="text-2xl font-medium tracking-tight">Orders</h1>
+</div>
+
+{% if order_items %}
+<div class="border border-gray-100">
+    <div class="grid grid-cols-5 gap-4 px-6 py-3 border-b border-gray-100">
+        <p class="text-xs tracking-[0.2em] uppercase text-gray-400">Order</p>
+        <p class="text-xs tracking-[0.2em] uppercase text-gray-400 col-span-2">Product</p>
+        <p class="text-xs tracking-[0.2em] uppercase text-gray-400">Amount</p>
+        <p class="text-xs tracking-[0.2em] uppercase text-gray-400">Status</p>
+    </div>
+
+    {% for item in order_items %}
+    <a href="{% url 'sellers:order_detail' item.order.id %}"
+       class="grid grid-cols-5 gap-4 px-6 py-4 border-b border-gray-50 hover:bg-gray-50 transition-colors items-center">
+        <p class="text-sm text-gray-500">#{{ item.order.id }}</p>
+        <div class="col-span-2">
+            <p class="text-sm font-medium">{{ item.product_name }}</p>
+            <p class="text-xs text-gray-400">{{ item.size_name }} × {{ item.quantity }}</p>
+        </div>
+        <p class="text-sm">€{{ item.seller_amount|floatformat:2 }}</p>
+        <p class="text-xs tracking-wide uppercase
+           {% if item.order.status == 'delivered' %}text-green-600
+           {% elif item.order.status == 'cancelled' %}text-red-500
+           {% else %}text-gray-500{% endif %}">
+            {{ item.order.status }}
+        </p>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="border border-gray-100 p-16 text-center">
+    <p class="text-sm text-gray-400 tracking-wide">No orders yet.</p>
+</div>
+{% endif %}
+{% endblock %}

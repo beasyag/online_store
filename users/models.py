@@ -11,6 +11,7 @@ class CustomUserManager(BaseUserManager):
         user = self.model(email=email, first_name=first_name, last_name=last_name, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
+        return user
 
     def create_superuser(self, email, first_name, last_name, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
@@ -36,10 +37,25 @@ class CustomUser(AbstractUser):
     province = models.CharField(max_length=100, blank=True, null=True)
     postal_code = models.CharField(max_length=20, blank=True, null=True)
     phone = models.CharField(max_length=150, unique=True, blank=True, null=True)
+    ROLE_CHOICES = (
+        ('buyer', 'Buyer'),
+        ('seller', 'Seller'),
+        ('admin', 'Admin'),
+    )
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='buyer')
 
     username = None
+    objects = CustomUserManager()  # менеджер называется objects, как принято
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
+
+    @property
+    def is_seller(self):
+        return self.role == 'seller' and hasattr(self, 'seller')
+
+    @property
+    def is_verified_seller(self):
+        return self.is_seller and self.seller.is_verified
 
     def __str__(self):
         return self.email
