@@ -53,6 +53,10 @@ INSTALLED_APPS = [
     'users',
     'orders',
     'payment',
+    'sellers',
+    'chat',
+    'payouts',
+    'reviews',
 ]
 
 AUTHENTICATION_BACKENDS = [
