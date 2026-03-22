@@ -8,8 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Helvetica:wght@400;500;600;700&display=swap');
+        body { font-family: 'Helvetica, sans-serif; }
 
         .product-image { transition: transform 0.3s ease; }
         .product-card:hover .product-image { transform: scale(1.05); }
@@ -53,6 +53,7 @@
         .htmx-request.htmx-indicator { opacity: 1; }
     </style>
 </head>
+
 <body class="bg-white">
 
     <!-- Mobile Menu Overlay -->
@@ -271,4 +272,16 @@
         };
     </script>
 </body>
+<footer class="border-t border-gray-100 px-8 py-6">
+    <div class="flex justify-between items-center">
+        <p class="text-xs text-gray-400 tracking-wide uppercase">
+            MAIN © {% now "Y" %}
+        </p>
+        <div class="flex gap-6">
+            <a href="#" class="text-xs text-gray-400 uppercase tracking-wide hover:text-gray-900">Stockists</a>
+            <a href="#" class="text-xs text-gray-400 uppercase tracking-wide hover:text-gray-900">Contact</a>
+            <a href="#" class="text-xs text-gray-400 uppercase tracking-wide hover:text-gray-900">Legal</a>
+        </div>
+    </div>
+</footer>
 </html>

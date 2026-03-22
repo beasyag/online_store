@@ -1,77 +1,83 @@
 <main class="mx-auto">
 
-  <!-- Hero -->
-  <section class="border-b border-gray-100 px-8 py-20 text-center">
-    <p class="text-xs tracking-[0.3em] uppercase text-gray-400 mb-6">New Season</p>
-    <h1 class="text-5xl sm:text-6xl font-medium tracking-tight leading-tight mb-4">
-      Enfants Riches<br>Déprimés
-    </h1>
-    <p class="text-xs tracking-[0.15em] uppercase text-gray-500 mb-10">Spring / Summer 2026</p>
-    <a href="{% url 'main:catalog_all' %}"
-       hx-get="{% url 'main:catalog_all' %}"
-       hx-target="#main-content"
-       hx-push-url="true"
-       class="inline-block border border-gray-300 px-8 py-3 text-xs tracking-[0.2em] uppercase hover:bg-black hover:text-white hover:border-black transition-colors duration-300">
-      Shop Now
-    </a>
-  </section>
+    <!-- Hero с видео -->
+    <section class="relative h-screen flex flex-col items-center justify-center text-center overflow-hidden">
 
-  <!-- Categories -->
-  <section class="px-8 py-16">
-    <p class="text-xs tracking-[0.3em] uppercase text-gray-400 mb-8">Categories</p>
-    <div class="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y divide-gray-100 border border-gray-100">
-      {% for category in categories %}
-      <a href="{% url 'main:catalog' category.slug %}"
-         hx-get="{% url 'main:catalog' category.slug %}"
-         hx-target="#main-content"
-         hx-push-url="true"
-         class="group p-8 hover:bg-gray-50 transition-colors">
-        <p class="text-xs tracking-[0.2em] uppercase font-medium mb-2">{{ category.name }}</p>
-        <p class="text-xs text-gray-400 group-hover:text-gray-600 transition-colors">Explore →</p>
-      </a>
-      {% endfor %}
-    </div>
-  </section>
+        {% if hero_video %}
+        <video autoplay
+               muted
+               loop
+               playsinline
+               class="absolute inset-0 w-full h-full object-cover">
+            <source src="{{ hero_video.video.url }}" type="video/mp4">
+        </video>
+        <div class="absolute inset-0 bg-black/30"></div>
+        {% else %}
+        <!-- Fallback если видео нет -->
+        <div class="absolute inset-0 bg-gray-100"></div>
+        {% endif %}
 
-  <!-- Featured Products -->
-  <section class="px-8 pb-16 border-b border-gray-100">
-    <div class="flex justify-between items-center mb-8">
-      <p class="text-xs tracking-[0.3em] uppercase text-gray-400">Featured</p>
-      <a href="{% url 'main:catalog_all' %}"
-         hx-get="{% url 'main:catalog_all' %}"
-         hx-target="#main-content"
-         hx-push-url="true"
-         class="text-xs tracking-[0.2em] uppercase text-gray-500 hover:text-gray-900 transition-colors">
-        View All
-      </a>
-    </div>
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-      {% for product in featured_products %}
-      <div class="group cursor-pointer"
-           hx-get="{% url 'main:product_detail' product.slug %}"
-           hx-target="#main-content"
-           hx-push-url="true">
-        <div class="aspect-[3/4] bg-gray-100 mb-3 overflow-hidden">
-          {% if product.main_image %}
-          <img src="{{ product.main_image.url }}"
-               alt="{{ product.name }}"
-               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-          {% endif %}
+        <div class="relative z-10 {% if hero_video %}text-white{% else %}text-gray-900{% endif %}">
+            <p class="text-xs tracking-[0.4em] uppercase mb-6 opacity-70">
+                New Season
+            </p>
+            <h1 class="text-5xl sm:text-7xl font-medium tracking-tight leading-none mb-12">
+                Enfants Riches<br>Déprimés
+            </h1>
+            <div class="flex flex-wrap gap-4 justify-center">
+                {% for category in categories %}
+                <a href="{% url 'main:catalog' category.slug %}"
+                   hx-get="{% url 'main:catalog' category.slug %}"
+                   hx-target="#main-content"
+                   hx-push-url="true"
+                   class="border px-8 py-3 text-xs tracking-[0.2em] uppercase transition-colors
+                   {% if hero_video %}border-white hover:bg-white hover:text-black{% else %}border-gray-900 hover:bg-black hover:text-white{% endif %}">
+                    Shop {{ category.name }}
+                </a>
+                {% endfor %}
+            </div>
         </div>
-        <p class="text-xs tracking-[0.1em] uppercase font-medium mb-1">{{ product.name }}</p>
-        <p class="text-xs text-gray-500">€ {{ product.price }}</p>
-      </div>
-      {% endfor %}
-    </div>
-  </section>
+    </section>
 
-  <!-- Promo Text -->
-  <section class="px-8 py-20 text-center border-b border-gray-100">
-    <p class="text-xs tracking-[0.3em] uppercase text-gray-400 mb-6">The Label</p>
-    <blockquote class="text-2xl sm:text-3xl font-light leading-relaxed max-w-xl mx-auto mb-6 italic">
-      "Clothes for those who feel too much."
-    </blockquote>
-    <p class="text-xs tracking-[0.15em] uppercase text-gray-400">Los Angeles, CA — Est. 2012</p>
-  </section>
+    <!-- Featured Products -->
+    <section class="px-8 py-20 border-b border-gray-100">
+        <div class="flex justify-between items-center mb-10">
+            <p class="text-xs tracking-[0.3em] uppercase text-gray-400">Featured</p>
+            <a href="{% url 'main:catalog_all' %}"
+               hx-get="{% url 'main:catalog_all' %}"
+               hx-target="#main-content"
+               hx-push-url="true"
+               class="text-xs tracking-[0.2em] uppercase text-gray-400 hover:text-gray-900 transition-colors">
+                View All
+            </a>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
+            {% for product in featured_products %}
+            <div class="group cursor-pointer"
+                 hx-get="{% url 'main:product_detail' product.slug %}"
+                 hx-target="#main-content"
+                 hx-push-url="true">
+                <div class="aspect-[3/4] bg-gray-100 mb-3 overflow-hidden">
+                    {% if product.main_image %}
+                    <img src="{{ product.main_image.url }}"
+                         alt="{{ product.name }}"
+                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    {% endif %}
+                </div>
+                <p class="text-xs tracking-[0.1em] uppercase font-medium mb-1">{{ product.name }}</p>
+                <p class="text-xs text-gray-500">€{{ product.price }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Promo -->
+    <section class="px-8 py-20 text-center">
+        <p class="text-xs tracking-[0.4em] uppercase text-gray-400 mb-6">The Label</p>
+        <blockquote class="text-2xl sm:text-3xl font-light leading-relaxed max-w-xl mx-auto mb-6 italic">
+            "Clothes for those who feel too much."
+        </blockquote>
+        <p class="text-xs tracking-[0.15em] uppercase text-gray-400">Los Angeles, CA — Est. 2012</p>
+    </section>
 
 </main>

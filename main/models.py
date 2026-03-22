@@ -1,6 +1,18 @@
 from django.db import models
 from django.utils.text import slugify
 
+class HeroVideo(models.Model):
+    title = models.CharField(max_length=100, blank=True)
+    video = models.FileField(upload_to='hero/')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Hero Video'
+        verbose_name_plural = 'Hero Videos'
+
+    def __str__(self):
+        return self.title or f"Hero Video {self.id}"
 
 class Category(models.Model):
     name = models.CharField(max_length=100)

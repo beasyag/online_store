@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView, DetailView
 from django.template.response import TemplateResponse
-from .models import Category, Product, Size
+from .models import Category, Product, Size, HeroVideo
 from django.db.models import Q
 
 
@@ -98,6 +98,7 @@ class IndexView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['current_category'] = None
         context['featured_products'] = Product.objects.order_by('-created_at')[:4]
+        context['hero_video'] = HeroVideo.objects.filter(is_active=True).first()
         return context
 
     def get(self, request, *args, **kwargs):

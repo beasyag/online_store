@@ -4,33 +4,46 @@
            name="q"
            placeholder="SEARCH"
            value="{{ search_query|default:'' }}"
-           class="w-40 bg-white border border-gray-300 py-2 px-3 text-sm font-medium uppercase focus:outline-none focus:border-gray-900"
+           class="w-40 bg-white border-b border-gray-300 py-2 px-3 text-sm uppercase focus:outline-none focus:border-gray-900 bg-transparent"
            hx-get="{% url 'main:catalog_all' %}"
            hx-target="#main-content"
            hx-push-url="true"
            hx-trigger="input delay:500ms"
            hx-swap="innerHTML">
-    <button class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-900"
+    <button class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-900 text-lg leading-none"
             hx-get="{% url 'main:catalog_all' %}?reset_search=true"
-            hx-target="#search-wrapper, #mobile-search-wrapper"
+            hx-target="#mobile-search-wrapper"
             hx-swap="innerHTML"
-            hx-on::before-request="document.getElementById('search-input').value = ''; document.getElementById('search-input').placeholder = 'SEARCH';">
+            hx-on::after-request="
+                const mobileWrapper = document.getElementById('mobile-search-wrapper');
+                const desktopWrapper = document.getElementById('mobile-search-wrapper');
+            "
+            onclick="
+                document.getElementById('search-input').value = '';
+            ">
         ×
     </button>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    (function() {
         const searchInput = document.getElementById('search-input');
-        if (searchInput) {
-            searchInput.addEventListener('input', function() {
-                if (this.value) {
-                    this.placeholder = '';
-                } else {
-                    this.placeholder = 'SEARCH';
-                }
-            });
-            searchInput.focus();
-        }
-    });
+        if (!searchInput) return;
+
+        searchInput.focus();
+
+        searchInput.addEventListener('input', function() {
+            this.placeholder = this.value ? '' : 'SEARCH';
+        });
+
+        // ← закрыть поиск по Escape
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                htmx.ajax('GET', '{% url "main:catalog_all" %}?reset_search=true', {
+                    target: '#mobile-search-wrapper',
+                    swap: 'innerHTML'
+                });
+            }
+        });
+    })();
 </script>
