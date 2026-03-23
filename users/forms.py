@@ -1,9 +1,10 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
 from django.contrib.auth import get_user_model, authenticate
 from django.utils.html import strip_tags
 from django.core.validators import RegexValidator
 
+from users.models import Address, CustomUser
 
 User = get_user_model()
 
@@ -119,3 +120,93 @@ class CustomUserUpdateForm(forms.ModelForm):
             if cleaned_data.get(field):
                 cleaned_data[field] = strip_tags(cleaned_data[field])
         return cleaned_data
+
+class AddressForm(forms.ModelForm):
+    class Meta:
+        model = Address
+        fields = (
+            'first_name', 'last_name', 'address1', 'address2',
+            'city', 'country', 'province', 'postal_code', 'phone', 'is_default'
+        )
+        widgets = {
+            'first_name': forms.TextInput(attrs={
+                'class': 'dotted-input w-full py-3 text-sm',
+                'placeholder': 'FIRST NAME'
+            }),
+            'last_name': forms.TextInput(attrs={
+                'class': 'dotted-input w-full py-3 text-sm',
+                'placeholder': 'LAST NAME'
+            }),
+            'address1': forms.TextInput(attrs={
+                'class': 'dotted-input w-full py-3 text-sm',
+                'placeholder': 'ADDRESS LINE 1'
+            }),
+            'address2': forms.TextInput(attrs={
+                'class': 'dotted-input w-full py-3 text-sm',
+                'placeholder': 'ADDRESS LINE 2 (OPTIONAL)'
+            }),
+            'city': forms.TextInput(attrs={
+                'class': 'dotted-input w-full py-3 text-sm',
+                'placeholder': 'CITY'
+            }),
+            'country': forms.TextInput(attrs={
+                'class': 'dotted-input w-full py-3 text-sm',
+                'placeholder': 'COUNTRY'
+            }),
+            'province': forms.TextInput(attrs={
+                'class': 'dotted-input w-full py-3 text-sm',
+                'placeholder': 'STATE / PROVINCE'
+            }),
+            'postal_code': forms.TextInput(attrs={
+                'class': 'dotted-input w-full py-3 text-sm',
+                'placeholder': 'POSTAL CODE'
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'dotted-input w-full py-3 text-sm',
+                'placeholder': 'PHONE'
+            }),
+        }
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ('first_name', 'last_name', 'email')
+        widgets = {
+            'first_name': forms.TextInput(attrs={
+                'class': 'dotted-input w-full py-3 text-sm',
+                'placeholder': 'FIRST NAME'
+            }),
+            'last_name': forms.TextInput(attrs={
+                'class': 'dotted-input w-full py-3 text-sm',
+                'placeholder': 'LAST NAME'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'dotted-input w-full py-3 text-sm',
+                'placeholder': 'EMAIL'
+            }),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email and CustomUser.objects.filter(
+            email=email
+        ).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError('Email already registered')
+        return email
+
+
+class CustomPasswordChangeForm(PasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['old_password'].widget = forms.PasswordInput(attrs={
+            'class': 'dotted-input w-full py-3 text-sm',
+            'placeholder': 'CURRENT PASSWORD'
+        })
+        self.fields['new_password1'].widget = forms.PasswordInput(attrs={
+            'class': 'dotted-input w-full py-3 text-sm',
+            'placeholder': 'NEW PASSWORD'
+        })
+        self.fields['new_password2'].widget = forms.PasswordInput(attrs={
+            'class': 'dotted-input w-full py-3 text-sm',
+            'placeholder': 'CONFIRM NEW PASSWORD'
+        })

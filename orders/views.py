@@ -147,7 +147,7 @@ class CheckoutView(CartMixin, View):
         try:
             logger.info(f"Creating payment session for provider: {payment_provider}")
             if payment_provider == 'stripe':
-                checkout_session = create_stripe_checkout_session(order, request)
+                checkout_session = create_stripe_checkout_session(order, cart, request)
                 cart.clear()
                 if request.headers.get('HX-Request'):
                     response = HttpResponse(status=200)

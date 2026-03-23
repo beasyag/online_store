@@ -1,10 +1,12 @@
 {% block content %}
-<main class="mx-auto px-4 sm:px-6 lg:px-8 py-8" xmlns:hx-on="http://www.w3.org/1999/xhtml">
+<main class="mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24" xmlns:hx-on="http://www.w3.org/1999/xhtml">
     <!-- Breadcrumb and Filters -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 sm:mb-12 space-y-4 sm:space-y-0">
-        <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 uppercase">
-            {% if current_category %}
-                {{ current_category|upper }} > NEW ARRIVALS
+        <h2 class="text-xl sm:text-2xl font-medium tracking-tight text-gray-900 uppercase">
+            {% if current_subcategory %}
+                {{ current_subcategory.name|upper }}
+            {% elif current_category %}
+                {{ current_category|upper }}
             {% else %}
                 ALL PRODUCTS
             {% endif %}

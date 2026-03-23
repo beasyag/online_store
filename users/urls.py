@@ -13,6 +13,11 @@ urlpatterns = [
     path('order-history/', views.order_history, name='order_history'),
     path('order/<int:order_id>/', views.order_detail, name='order_detail'),
     path('logout/', views.logout_view, name='logout'),
-    path('orders/', views.order_history, name='order_history'),           # ← добавить
+    path('orders/', views.order_history, name='order_history'),
+    path('change-password/', views.change_password, name='change_password'),  # ← новое
     path('orders/<int:order_id>/', views.order_detail, name='order_detail'),
+    path('addresses/', views.addresses_view, name='addresses'),  # ← новое
+    path('addresses/add/', views.address_add, name='address_add'),  # ← новое
+    path('addresses/<int:pk>/edit/', views.address_edit, name='address_edit'),  # ← новое
+    path('addresses/<int:pk>/delete/', views.address_delete, name='address_delete'),
 ]

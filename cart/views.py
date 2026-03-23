@@ -3,7 +3,7 @@ from django.views.generic import View
 from django.http import JsonResponse
 from django.template.response import TemplateResponse
 from django.db import transaction
-from main.models import Product, ProductSize
+from main.models import Product, ProductSize, Size
 from .models import Cart, CartItem
 from .forms import AddToCartForm
 
@@ -44,58 +44,47 @@ class AddToCartView(CartMixin, View):
         cart = self.get_cart(request)
         product = get_object_or_404(Product, slug=slug)
 
-        form = AddToCartForm(request.POST, product=product)
+        # ← если у товара нет размеров — size_id не нужен
+        has_sizes = (
+            product.product_type and
+            (product.product_type.has_sizes or product.product_type.has_shoe_sizes)
+        )
 
-        if not form.is_valid():
-            return JsonResponse({
-                'error': 'Invalid form data',
-                'errors': form.errors,
-            }, status=400)
-
-        size_id = form.cleaned_data.get('size_id')
-        if size_id:
-            product_size = get_object_or_404(
-                ProductSize,
-                id=size_id,
-                product=product
-            )
+        if has_sizes:
+            form = AddToCartForm(request.POST, product=product)
+            if not form.is_valid():
+                return JsonResponse({'error': 'Invalid form data'}, status=400)
+            size_id = form.cleaned_data.get('size_id')
+            product_size = get_object_or_404(ProductSize, id=size_id, product=product)
+            quantity = form.cleaned_data['quantity']
         else:
-            product_size = product.product_sizes.filter(stock__gt=0).first()
-            if not product_size:
-                return JsonResponse({
-                    'error': 'No sizes available'
-                }, status=400)
+            # ← для аксессуаров, сумок, парфюмерии — без размера
+            product_size = product.product_sizes.first()
+            quantity = int(request.POST.get('quantity', 1))
 
-        quantity = form.cleaned_data['quantity']
+            if not product_size:
+                # создаём заглушку ProductSize без размера
+                default_size, _ = Size.objects.get_or_create(name='One Size')
+                product_size, _ = ProductSize.objects.get_or_create(
+                    product=product,
+                    size=default_size,
+                    defaults={'stock': 999}
+                )
+
         if product_size.stock < quantity:
             return JsonResponse({
                 'error': f'Only {product_size.stock} items available'
             }, status=400)
 
-        existing_item = cart.items.filter(
-            product=product,
-            product_size=product_size,
-        ).first()
-
-        if existing_item:
-            total_quantity = existing_item.quantity + quantity
-            if total_quantity > product_size.stock:
-                return JsonResponse({
-                    'error': f"Cannot add {quantity} items. Only {product_size.stock - existing_item.quantity} more available."
-                }, status=400)
-
         cart_item = cart.add_product(product, product_size, quantity)
-
         request.session['cart_id'] = cart.id
         request.session.modified = True
 
         if request.headers.get('HX-Request'):
-            # ← возвращаем шаблон напрямую, а не redirect
             context = {
                 'cart': cart,
                 'cart_items': cart.items.select_related(
-                    'product',
-                    'product_size__size'
+                    'product', 'product_size__size'
                 ).order_by('-added_at')
             }
             return TemplateResponse(request, 'cart/cart_modal.html', context)

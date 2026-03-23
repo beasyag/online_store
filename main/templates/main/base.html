@@ -63,7 +63,8 @@
     <div id="mobileMenu" class="mobile-menu fixed top-0 left-0 w-80 h-full bg-white z-50 md:hidden shadow-lg">
         <div class="p-6">
             <div class="flex justify-between items-center mb-8">
-                <h2 class="text-lg font-bold tracking-tight">MAIN</h2>
+                <h2 class="text-lg font-bold tracking-tight">Enfants Riches
+                                                            Déprimés</h2>
                 <button id="closeMenu" class="hamburger active">
                     <span></span><span></span><span></span>
                 </button>
@@ -111,74 +112,180 @@
     </div>
 
     <!-- Header -->
-    <header class="sticky top-0 bg-white border-b border-gray-100 z-30">
-        <div class="mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
+    <header class="fixed top-0 left-0 right-0 z-30 px-6 py-4" id="site-header">
+        <div class="flex justify-between items-start">
 
-                <button id="menuToggle" class="hamburger md:hidden">
-                    <span></span><span></span><span></span>
-                </button>
-
-                <div class="flex-shrink-0">
-                    <a href="{% url 'main:index' %}"
-                       hx-get="{% url 'main:index' %}"
-                       hx-target="#main-content"
-                       hx-push-url="true">
-                        <h1 class="text-sm sm:text-lg font-bold tracking-tight">MAIN</h1>
-                    </a>
-                </div>
-
-                <nav class="hidden md:flex space-x-8">
-                    {% for category in categories %}
-                    <a href="{% url 'main:catalog' category.slug %}"
-                       hx-get="{% url 'main:catalog' category.slug %}"
-                       hx-target="#main-content"
-                       hx-push-url="true"
-                       class="nav-link text-sm font-medium text-gray-900 hover:text-gray-700 {% if current_category == category.slug %}active{% endif %}">
-                       {{ category.name|upper }}
-                    </a>
-                    {% endfor %}
-                </nav>
-
-                <div class="hidden md:flex items-center space-x-6">
-                    <div class="relative" id="mobile-search-wrapper">
-                        <button id="mobile-search-toggle"
-                                hx-get="{% url 'main:catalog_all' %}?show_search=true"
-                                hx-target="#mobile-search-wrapper"
-                                hx-swap="innerHTML"
-                                class="text-sm font-medium uppercase hover:text-gray-600">
-                            SEARCH
-                        </button>
-                    </div>
-                    {% if request.user.is_authenticated and request.user.is_seller %}
-                    <a href="{% url 'sellers:dashboard' %}"
-                       class="text-sm font-medium text-gray-900 uppercase hover:text-gray-600">
-                        SELLER
-                    </a>
-                    {% endif %}
-                    <a href="{% url 'chat:list' %}"
-                       class="text-sm font-medium text-gray-900 uppercase hover:text-gray-600">
-                        MESSAGES
-                    </a>
-                    <a href="{% url 'users:profile' %}"
-                       hx-get="{% url 'users:profile' %}"
-                       hx-target="#main-content"
-                       hx-push-url="true"
-                       class="text-sm font-medium text-gray-900 uppercase hover:text-gray-600">
-                        ACCOUNT
-                    </a>
-
-                    <a href="#" id="desktopCart" class="text-sm font-medium text-gray-900 hover:text-gray-700">CART (0)</a>
-                </div>
-
-                <div class="md:hidden">
-                    <a href="#" id="mobileCartHeader" class="text-xs font-medium text-gray-900">CART (0)</a>
-                </div>
+            <!-- Logo -->
+            <div class="flex-shrink-0">
+                <a href="{% url 'main:index' %}"
+                   hx-get="{% url 'main:index' %}"
+                   hx-target="#main-content"
+                   hx-push-url="true">
+                    <h1 class="text-sm font-bold tracking-tight leading-tight uppercase header-text"
+                        style="font-family: serif; max-width: 120px;">
+                        Main
+                    </h1>
+                </a>
             </div>
+
+            <!-- Center Nav -->
+            <nav class="hidden md:flex items-center space-x-8 absolute left-1/2 -translate-x-1/2 top-4">
+                {% for category in categories %}
+                <a href="{% url 'main:catalog' category.slug %}"
+                   hx-get="{% url 'main:catalog' category.slug %}"
+                   hx-target="#main-content"
+                   hx-push-url="true"
+                   class="text-xs font-bold tracking-[0.15em] uppercase header-text hover:opacity-60 transition-opacity
+                   {% if current_category == category.slug %}opacity-60{% endif %}">
+                   {{ category.name }}
+                </a>
+                {% endfor %}
+            </nav>
+
+            <!-- Right links -->
+            <div class="hidden md:flex items-center space-x-6">
+                <div class="relative" id="mobile-search-wrapper">
+                    <button id="mobile-search-toggle"
+                            hx-get="{% url 'main:catalog_all' %}?show_search=true"
+                            hx-target="#mobile-search-wrapper"
+                            hx-swap="innerHTML"
+                            class="text-xs font-bold tracking-[0.15em] uppercase header-text hover:opacity-60 transition-opacity">
+                        SEARCH
+                    </button>
+                </div>
+
+                <!-- Account с дропдауном -->
+                <div class="relative" id="account-dropdown-wrapper">
+                    <button onclick="toggleAccountMenu()"
+                            class="text-xs font-bold tracking-[0.15em] uppercase header-text hover:opacity-60 transition-opacity">
+                        ACCOUNT
+                    </button>
+
+                    <!-- Dropdown меню -->
+                    <div id="account-menu"
+                         class="hidden absolute right-0 top-8 w-48 z-50">
+                        <div class="bg-black py-4 px-6 space-y-3">
+                            {% if request.user.is_authenticated %}
+                            <a href="{% url 'users:profile' %}"
+                               hx-get="{% url 'users:profile' %}"
+                               hx-target="#main-content"
+                               hx-push-url="true"
+                               onclick="closeAccountMenu()"
+                               class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60 transition-opacity">
+                                ACCOUNT DETAILS
+                            </a>
+                            <a href="{% url 'users:addresses' %}"
+                               hx-get="{% url 'users:addresses' %}"
+                               hx-target="#main-content"
+                               hx-push-url="true"
+                               onclick="closeAccountMenu()"
+                               class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60 transition-opacity">
+                                ADDRESSES
+                            </a>
+                            <a href="{% url 'users:order_history' %}"
+                               hx-get="{% url 'users:order_history' %}"
+                               hx-target="#main-content"
+                               hx-push-url="true"
+                               onclick="closeAccountMenu()"
+                               class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60 transition-opacity">
+                                ORDER HISTORY
+                            </a>
+                            {% if request.user.is_seller %}
+                            <a href="{% url 'sellers:dashboard' %}"
+                               onclick="closeAccountMenu()"
+                               class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60 transition-opacity">
+                                SELLER DASHBOARD
+                            </a>
+                            {% endif %}
+                            <div class="border-t border-gray-700 pt-3">
+                                <a href="{% url 'users:logout' %}"
+                                   onclick="closeAccountMenu()"
+                                   class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60 transition-opacity">
+                                    LOGOUT
+                                </a>
+                            </div>
+                            {% else %}
+                            <a href="{% url 'users:login' %}"
+                               hx-get="{% url 'users:login' %}"
+                               hx-target="#main-content"
+                               hx-push-url="true"
+                               onclick="closeAccountMenu()"
+                               class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60 transition-opacity">
+                                LOGIN
+                            </a>
+                            <a href="{% url 'users:register' %}"
+                               hx-get="{% url 'users:register' %}"
+                               hx-target="#main-content"
+                               hx-push-url="true"
+                               onclick="closeAccountMenu()"
+                               class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60 transition-opacity">
+                                CREATE ACCOUNT
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <a href="#" id="desktopCart"
+                   class="text-xs font-bold tracking-[0.15em] uppercase header-text hover:opacity-60 transition-opacity">
+                    CART (0)
+                </a>
+            </div>
+
+            <!-- Mobile buttons -->
+            <div class="md:hidden flex items-center gap-4">
+                <a href="#" id="mobileCartHeader"
+                   class="text-xs font-bold header-text">CART (0)</a>
+                <button id="menuToggle" class="hamburger">
+                    <span class="header-bg"></span>
+                    <span class="header-bg"></span>
+                    <span class="header-bg"></span>
+                </button>
+            </div>
+
         </div>
     </header>
 
-    <div id="cart-container"></div>
+<!-- Хедер прозрачный — контент начинается с самого верха -->
+<div id="cart-container"></div>
+<div class="htmx-indicator fixed top-0 left-0 w-full h-0.5 bg-white z-50"></div>
+
+<style>
+    /* Прозрачный хедер — текст белый поверх видео/изображения */
+    .header-text {
+        color: white;
+        transition: color 0.3s ease;
+    }
+
+    .header-bg {
+        display: block;
+        width: 25px;
+        height: 1.5px;
+        background-color: white;
+        margin: 5px 0;
+        transition: all 0.3s;
+    }
+
+    /* Когда страница прокручена — хедер становится белым с тёмным текстом */
+    #site-header.scrolled .header-text {
+        color: black;
+    }
+
+    #site-header.scrolled .header-bg {
+        background-color: black;
+    }
+
+    #site-header.scrolled {
+        background-color: white;
+        border-bottom: 0.5px solid #f3f4f6;
+    }
+
+    /* Активная категория */
+    .nav-link.active {
+        font-weight: 700;
+    }
+</style>
+
 
     <!-- Loading Indicator -->
     <div class="htmx-indicator fixed top-0 left-0 w-full h-1 bg-black z-50"></div>
@@ -189,7 +296,99 @@
     </div>
 
     <script>
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        // Ensure CSRF header is present for all HTMX non-GET requests.
+        document.body.addEventListener('htmx:configRequest', function(event) {
+            const csrfToken = getCookie('csrftoken');
+            if (csrfToken) {
+                event.detail.headers['X-CSRFToken'] = csrfToken;
+            }
+        });
+
+         /* Хедер меняет цвет при скролле */
+        window.addEventListener('scroll', function() {
+            const header = document.getElementById('site-header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        /* Account dropdown */
+        function toggleAccountMenu() {
+            const menu = document.getElementById('account-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function closeAccountMenu() {
+            const menu = document.getElementById('account-menu');
+            menu.classList.add('hidden');
+        }
+
+        /* Закрыть дропдаун при клике вне */
+        document.addEventListener('click', function(e) {
+            const wrapper = document.getElementById('account-dropdown-wrapper');
+            if (!wrapper.contains(e.target)) {
+                closeAccountMenu();
+            }
+        });
+
+        /* Закрыть после HTMX навигации */
+        document.addEventListener('htmx:afterRequest', function() {
+            closeAccountMenu();
+            closeMobileMenu();
+        });
+        function openCatalogModal() {
+            const modal = document.getElementById('catalog-modal');
+            const panel = document.getElementById('catalog-panel');
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            // анимация появления
+            panel.style.transform = 'translateX(-100%)';
+            panel.style.transition = 'transform 0.3s ease';
+            setTimeout(() => panel.style.transform = 'translateX(0)', 10);
+        }
+
+        function closeCatalogModal(event) {
+            // закрыть только если клик по overlay, а не по панели
+            if (event && document.getElementById('catalog-panel').contains(event.target)) return;
+            const modal = document.getElementById('catalog-modal');
+            const panel = document.getElementById('catalog-panel');
+            panel.style.transform = 'translateX(-100%)';
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        function toggleSubcategories(id) {
+            const el = document.getElementById(id);
+            const categorySlug = id.replace('sub-', '');
+            const btn = document.getElementById('toggle-' + categorySlug);
+            const isHidden = el.classList.contains('hidden');
+            el.classList.toggle('hidden');
+            btn.textContent = isHidden ? '−' : '+';
+        }
+
+        // закрыть по Escape
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeCatalogModal();
+        });
+
+        // закрыть после HTMX навигации
+        document.addEventListener('htmx:afterRequest', () => {
+            const modal = document.getElementById('catalog-modal');
+            if (!modal.classList.contains('hidden')) closeCatalogModal();
+        });
         document.addEventListener('DOMContentLoaded', function() {
+            initHeader();
             const menuToggle = document.getElementById('menuToggle');
             const closeMenu = document.getElementById('closeMenu');
             const mobileMenu = document.getElementById('mobileMenu');
@@ -270,6 +469,35 @@
                 if (el) el.textContent = cartText;
             });
         };
+        function initHeader() {
+            const header = document.getElementById('site-header');
+            const isHomePage = document.querySelector('.hero-section') !== null;
+
+            if (!isHomePage) {
+                // не главная страница — сразу тёмный хедер
+                header.classList.add('scrolled');
+            } else {
+                // главная — прозрачный пока не проскролили
+                header.classList.remove('scrolled');
+            }
+        };
+        window.addEventListener('scroll', function() {
+            const header = document.getElementById('site-header');
+            const isHomePage = document.querySelector('.hero-section') !== null;
+
+            if (isHomePage) {
+                if (window.scrollY > 80) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            } else {
+                header.classList.add('scrolled');
+            }
+        });
+        document.addEventListener('htmx:afterSettle', function() {
+            initHeader();
+        });
     </script>
 </body>
 <footer class="border-t border-gray-100 px-8 py-6">

@@ -10,5 +10,5 @@ def cart_processor(request):
     return {
         'cart_total_items': cart.total_items,
         'cart_subtotal' : cart.subtotal,
-        'categories' : Category.objects.all(),
+        'categories': Category.objects.prefetch_related('subcategories').all(),
     }

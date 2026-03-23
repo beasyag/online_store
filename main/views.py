@@ -21,24 +21,37 @@ class IndexView(TemplateView):
         return TemplateResponse(request, self.template_name, context)
 
 
+from .models import Category, Product, Size, HeroVideo, Subcategory
+
 class CatalogView(TemplateView):
-    template_name = 'main/base.html'
+    template_name = 'main/catalog_page.html'
 
     FILTER_MAPPING = {
-        'color': lambda qs, value: qs.filter(color__iexact=value),
-        'min_price': lambda qs, value: qs.filter(price__gte=value),
-        'max_price': lambda qs, value: qs.filter(price__lte=value),
-        'size': lambda qs, value: qs.filter(product_sizes__size__name=value),
+        'color': lambda qs, v: qs.filter(color__iexact=v),
+        'min_price': lambda qs, v: qs.filter(price__gte=v),
+        'max_price': lambda qs, v: qs.filter(price__lte=v),
+        'size': lambda qs, v: qs.filter(product_sizes__size__name=v),
     }
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         category_slug = kwargs.get('category_slug')
+        subcategory_slug = kwargs.get('subcategory_slug')  # ← новое
+
         products = Product.objects.all().order_by('-created_at')
+        current_subcategory = None
 
         if category_slug:
-            get_object_or_404(Category, slug=category_slug)  # 404 если не существует
+            get_object_or_404(Category, slug=category_slug)
             products = products.filter(category__slug=category_slug)
+
+        if subcategory_slug:
+            current_subcategory = get_object_or_404(
+                Subcategory,
+                slug=subcategory_slug,
+                category__slug=category_slug
+            )
+            products = products.filter(subcategory=current_subcategory)
 
         query = self.request.GET.get('q')
         if query:
@@ -56,13 +69,12 @@ class CatalogView(TemplateView):
                 filter_params[param] = ''
 
         filter_params['q'] = query or ''
-
-        # ← distinct() защищает от дублей при JOIN по размерам
         products = products.distinct()
 
         context.update({
             'products': products,
             'current_category': category_slug,
+            'current_subcategory': current_subcategory,
             'filter_params': filter_params,
             'sizes': Size.objects.all(),
             'search_query': query or '',
@@ -88,7 +100,7 @@ class CatalogView(TemplateView):
                 else 'main/catalog.html'
             )
             return TemplateResponse(request, template, context)
-        return TemplateResponse(request, 'main/catalog_page.html', context)  # ← полная страница
+        return TemplateResponse(request, self.template_name, context)
 
 
 class IndexView(TemplateView):

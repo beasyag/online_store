@@ -1,10 +1,109 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+<style>
+    .dotted-input {
+        border: none;
+        border-bottom: 2px dotted #d1d5db;
+        background: transparent;
+        outline: none;
+        transition: border-color 0.3s ease;
+    }
+    .dotted-input:focus { border-bottom-color: #374151; }
+    .dotted-input::placeholder { color: #6b7280; font-weight: 500; }
+</style>
+
+<div class="flex items-center gap-4 mb-8">
+    <a href="{% url 'users:addresses' %}"
+       hx-get="{% url 'users:addresses' %}"
+       hx-target="#profile-content"
+       hx-push-url="true"
+       class="text-xs tracking-wide uppercase text-gray-400 hover:text-gray-900">← Back</a>
+    <h2 class="text-xl font-medium tracking-tight">{{ action }} Address</h2>
+</div>
+
+<form method="post" class="max-w-lg space-y-6">
+    {% csrf_token %}
+
+    <div class="grid grid-cols-2 gap-6">
+        <div>
+            <label class="block text-xs tracking-[0.2em] uppercase text-gray-400 mb-2">First Name</label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}
+            <p class="text-red-500 text-xs mt-1">{{ form.first_name.errors }}</p>
+            {% endif %}
+        </div>
+        <div>
+            <label class="block text-xs tracking-[0.2em] uppercase text-gray-400 mb-2">Last Name</label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}
+            <p class="text-red-500 text-xs mt-1">{{ form.last_name.errors }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div>
+        <label class="block text-xs tracking-[0.2em] uppercase text-gray-400 mb-2">Address Line 1</label>
+        {{ form.address1 }}
+        {% if form.address1.errors %}
+        <p class="text-red-500 text-xs mt-1">{{ form.address1.errors }}</p>
+        {% endif %}
+    </div>
+
+    <div>
+        <label class="block text-xs tracking-[0.2em] uppercase text-gray-400 mb-2">Address Line 2</label>
+        {{ form.address2 }}
+    </div>
+
+    <div class="grid grid-cols-2 gap-6">
+        <div>
+            <label class="block text-xs tracking-[0.2em] uppercase text-gray-400 mb-2">City</label>
+            {{ form.city }}
+            {% if form.city.errors %}
+            <p class="text-red-500 text-xs mt-1">{{ form.city.errors }}</p>
+            {% endif %}
+        </div>
+        <div>
+            <label class="block text-xs tracking-[0.2em] uppercase text-gray-400 mb-2">Postal Code</label>
+            {{ form.postal_code }}
+            {% if form.postal_code.errors %}
+            <p class="text-red-500 text-xs mt-1">{{ form.postal_code.errors }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-6">
+        <div>
+            <label class="block text-xs tracking-[0.2em] uppercase text-gray-400 mb-2">Country</label>
+            {{ form.country }}
+            {% if form.country.errors %}
+            <p class="text-red-500 text-xs mt-1">{{ form.country.errors }}</p>
+            {% endif %}
+        </div>
+        <div>
+            <label class="block text-xs tracking-[0.2em] uppercase text-gray-400 mb-2">Province</label>
+            {{ form.province }}
+        </div>
+    </div>
+
+    <div>
+        <label class="block text-xs tracking-[0.2em] uppercase text-gray-400 mb-2">Phone</label>
+        {{ form.phone }}
+    </div>
+
+    <div class="flex items-center gap-3">
+        {{ form.is_default }}
+        <label class="text-xs tracking-[0.2em] uppercase text-gray-500">Set as default address</label>
+    </div>
+
+    <div class="flex gap-4 pt-4">
+        <button type="submit"
+                class="bg-black text-white px-8 py-3 text-xs tracking-[0.2em] uppercase hover:bg-gray-800 transition-colors">
+            Save Address
+        </button>
+        <a href="{% url 'users:addresses' %}"
+           hx-get="{% url 'users:addresses' %}"
+           hx-target="#profile-content"
+           hx-push-url="true"
+           class="border border-gray-300 px-8 py-3 text-xs tracking-[0.2em] uppercase hover:border-gray-900 transition-colors">
+            Cancel
+        </a>
+    </div>
+</form>
