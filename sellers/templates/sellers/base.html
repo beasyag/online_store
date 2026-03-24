@@ -1,44 +1,45 @@
 {% extends "main/base.html" %}
 
 {% block content %}
-<div class="min-h-screen">
+<div class="min-h-screen pt-24">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="grid grid-cols-1 md:grid-cols-5 gap-8">
 
             <!-- Sidebar -->
             <div class="col-span-1">
-                <div class="border border-gray-100 p-6">
+                <div class="border border-gray-100 p-6 bg-white">
                     <p class="text-xs tracking-[0.3em] uppercase text-gray-400 mb-6">
                         {{ seller.shop_name }}
                     </p>
                     <nav class="space-y-4">
                         <a href="{% url 'sellers:dashboard' %}"
-                           class="block text-sm tracking-wide uppercase hover:text-gray-600
-                           {% if request.resolver_match.url_name == 'dashboard' %}font-medium{% else %}text-gray-500{% endif %}">
+                           class="block text-sm tracking-wide uppercase transition-colors
+                           {% if request.resolver_match.url_name == 'dashboard' %}font-bold text-gray-900{% else %}font-normal text-gray-500 hover:text-gray-900{% endif %}">
                             Dashboard
                         </a>
                         <a href="{% url 'sellers:products' %}"
-                           class="block text-sm tracking-wide uppercase hover:text-gray-600
-                           {% if 'product' in request.resolver_match.url_name %}font-medium{% else %}text-gray-500{% endif %}">
+                           class="block text-sm tracking-wide uppercase transition-colors
+                           {% if 'product' in request.resolver_match.url_name %}font-bold text-gray-900{% else %}font-normal text-gray-500 hover:text-gray-900{% endif %}">
                             Products
                         </a>
                         <a href="{% url 'sellers:orders' %}"
-                           class="block text-sm tracking-wide uppercase hover:text-gray-600
-                           {% if 'order' in request.resolver_match.url_name %}font-medium{% else %}text-gray-500{% endif %}">
+                           class="block text-sm tracking-wide uppercase transition-colors
+                           {% if request.resolver_match.url_name == 'orders' or request.resolver_match.url_name == 'order_detail' %}font-bold text-gray-900{% else %}font-normal text-gray-500 hover:text-gray-900{% endif %}">
                             Orders
                         </a>
                         <a href="{% url 'sellers:analytics' %}"
-                           class="block text-sm tracking-wide uppercase hover:text-gray-600
-                           {% if request.resolver_match.url_name == 'analytics' %}font-medium{% else %}text-gray-500{% endif %}">
+                           class="block text-sm tracking-wide uppercase transition-colors
+                           {% if request.resolver_match.url_name == 'analytics' %}font-bold text-gray-900{% else %}font-normal text-gray-500 hover:text-gray-900{% endif %}">
                             Analytics
                         </a>
                         <a href="{% url 'payouts:list' %}"
-                           class="block text-sm tracking-wide uppercase hover:text-gray-600 text-gray-500">
+                           class="block text-sm tracking-wide uppercase transition-colors
+                           {% if request.resolver_match.namespace == 'payouts' %}font-bold text-gray-900{% else %}font-normal text-gray-500 hover:text-gray-900{% endif %}">
                             Payouts
                         </a>
                         <div class="border-t border-gray-100 pt-4">
                             <a href="{% url 'sellers:shop' seller.shop_slug %}"
-                               class="block text-sm tracking-wide uppercase text-gray-400 hover:text-gray-600">
+                               class="block text-sm tracking-wide uppercase text-gray-400 hover:text-gray-600 transition-colors">
                                 View Shop →
                             </a>
                         </div>

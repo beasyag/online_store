@@ -1,9 +1,8 @@
 from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView, DetailView
 from django.template.response import TemplateResponse
-from .models import Category, Product, Size, HeroVideo
+from .models import Category, Product, Size, HeroVideo, Subcategory
 from django.db.models import Q
-
 
 class IndexView(TemplateView):
     template_name = 'main/base.html'
@@ -20,8 +19,6 @@ class IndexView(TemplateView):
             return TemplateResponse(request, 'main/home_content.html', context)
         return TemplateResponse(request, self.template_name, context)
 
-
-from .models import Category, Product, Size, HeroVideo, Subcategory
 
 class CatalogView(TemplateView):
     template_name = 'main/catalog_page.html'

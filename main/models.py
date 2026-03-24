@@ -15,34 +15,12 @@ class Category(models.Model):
         return self.name
 
 
-class ProductType(models.Model):
-    name = models.CharField(max_length=100)
-    slug = models.SlugField(max_length=100, unique=True)
-
-    # какие атрибуты показывать для этого типа
-    has_sizes = models.BooleanField(default=False)
-    has_shoe_sizes = models.BooleanField(default=False)
-    has_color = models.BooleanField(default=True)
-    has_material = models.BooleanField(default=False)
-    has_fragrance_notes = models.BooleanField(default=False)  # для парфюмерии
-    has_metal_type = models.BooleanField(default=False)       # для украшений
-    has_volume = models.BooleanField(default=False)           # для парфюмерии (мл)
-    has_weight = models.BooleanField(default=False)           # для украшений (г)
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.name
-
-
 class Size(models.Model):
     name = models.CharField(max_length=20)
 
     def __str__(self):
         return self.name
+
 
 class Subcategory(models.Model):
     category = models.ForeignKey(
@@ -67,7 +45,15 @@ class Subcategory(models.Model):
     def __str__(self):
         return f"{self.category.name} → {self.name}"
 
+
 class Product(models.Model):
+    METAL_CHOICES = (
+        ('gold', 'Gold'),
+        ('silver', 'Silver'),
+        ('platinum', 'Platinum'),
+        ('rose_gold', 'Rose Gold'),
+    )
+
     seller = models.ForeignKey(
         'sellers.Seller',
         on_delete=models.CASCADE,
@@ -82,13 +68,6 @@ class Product(models.Model):
         blank=True,
         related_name='products'
     )
-    product_type = models.ForeignKey(
-        ProductType,
-        on_delete=models.PROTECT,
-        related_name='products',
-        null=True,
-        blank=True
-    )
     name = models.CharField(max_length=100)
     slug = models.SlugField(max_length=100, unique=True)
     category = models.ForeignKey(
@@ -102,7 +81,7 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    # общие атрибуты
+    # Общие атрибуты
     color = models.CharField(max_length=100, blank=True)
     material = models.CharField(max_length=100, blank=True)
 
@@ -116,23 +95,10 @@ class Product(models.Model):
     volume_ml = models.PositiveIntegerField(null=True, blank=True)
 
     # Украшения
-    METAL_CHOICES = (
-        ('gold', 'Gold'),
-        ('silver', 'Silver'),
-        ('platinum', 'Platinum'),
-        ('rose_gold', 'Rose Gold'),
-    )
-    metal_type = models.CharField(
-        max_length=20,
-        choices=METAL_CHOICES,
-        blank=True
-    )
-    metal_purity = models.CharField(max_length=10, blank=True)  # 585, 750, 925
+    metal_type = models.CharField(max_length=20, choices=METAL_CHOICES, blank=True)
+    metal_purity = models.CharField(max_length=10, blank=True)
     gemstone = models.CharField(max_length=100, blank=True)
-    weight_g = models.DecimalField(
-        max_digits=6, decimal_places=2,
-        null=True, blank=True
-    )
+    weight_g = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:

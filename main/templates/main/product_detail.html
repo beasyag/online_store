@@ -73,7 +73,7 @@
             {% endif %}
 
             <!-- Clothing Sizes -->
-            {% if product.product_type.has_sizes and product.product_sizes.all %}
+            {% if product.product_sizes.all %}
             <div>
                 <h3 class="text-xs tracking-[0.2em] uppercase text-gray-500 mb-3">Size</h3>
                 <div class="grid grid-cols-4 gap-2">
@@ -98,34 +98,9 @@
             </div>
             {% endif %}
 
-            <!-- Shoe Sizes -->
-            {% if product.product_type.has_shoe_sizes %}
-            <div>
-                <h3 class="text-xs tracking-[0.2em] uppercase text-gray-500 mb-3">Shoe Size</h3>
-                <div class="grid grid-cols-4 gap-2">
-                    {% for product_size in product.product_sizes.all %}
-                    <div class="size-option">
-                        <input type="radio"
-                               name="size"
-                               class="size-radio hidden"
-                               id="size-{{ product_size.id }}"
-                               value="{{ product_size.id }}"
-                               data-size="{{ product_size.size.name }}"
-                               {% if product_size.stock == 0 %}disabled{% endif %}
-                               {% if forloop.first and product_size.stock > 0 %}checked{% endif %}>
-                        <label for="size-{{ product_size.id }}"
-                               class="block border border-gray-300 py-2 px-3 text-sm text-center cursor-pointer hover:border-gray-900 transition-colors
-                               {% if product_size.stock == 0 %}opacity-50 cursor-not-allowed{% endif %}">
-                            {{ product_size.size.name }}
-                        </label>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
 
             <!-- Volume (Perfume) -->
-            {% if product.product_type.has_volume and product.volume_ml %}
+            {% if product.volume_ml %}
             <div>
                 <h3 class="text-xs tracking-[0.2em] uppercase text-gray-500 mb-3">Volume</h3>
                 <p class="text-sm text-gray-600">{{ product.volume_ml }} ml</p>
@@ -133,7 +108,7 @@
             {% endif %}
 
             <!-- Metal (Jewelry) -->
-            {% if product.product_type.has_metal_type and product.metal_type %}
+            {% if product.metal_type %}
             <div>
                 <h3 class="text-xs tracking-[0.2em] uppercase text-gray-500 mb-3">Metal</h3>
                 <p class="text-sm text-gray-600">
@@ -143,7 +118,7 @@
             </div>
             {% endif %}
 
-            {% if product.product_type.has_weight and product.weight_g %}
+            {% if product.weight_g %}
             <div>
                 <h3 class="text-xs tracking-[0.2em] uppercase text-gray-500 mb-3">Weight</h3>
                 <p class="text-sm text-gray-600">{{ product.weight_g }} g</p>
@@ -170,7 +145,7 @@
             </div>
 
             <!-- Fragrance Notes -->
-            {% if product.product_type.has_fragrance_notes %}
+            {% if product.fragrance_top_notes or product.fragrance_heart_notes or product.fragrance_base_notes %}
             <div class="border-t border-gray-100 pt-6">
                 <h3 class="text-xs tracking-[0.2em] uppercase text-gray-500 mb-4">Fragrance Notes</h3>
                 {% if product.fragrance_top_notes %}
@@ -213,7 +188,7 @@
             {% endif %}
 
             <!-- Care — только для одежды -->
-            {% if product.product_type.has_sizes %}
+            {% if product.product_sizes.all and not product.shoe_size %}
             <div class="border-t border-gray-100 pt-6">
                 <h3 class="text-xs tracking-[0.2em] uppercase text-gray-500 mb-3">Care</h3>
                 <div class="text-sm text-gray-600 space-y-1">
@@ -223,7 +198,6 @@
                 </div>
             </div>
             {% endif %}
-
         </div>
     </div>
 

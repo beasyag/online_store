@@ -73,6 +73,12 @@ def stripe_webhook(request):
             order.status = 'processing'
             order.stripe_payment_intent_id = session.get('payment_intent')
             order.save()
+            # ← начислить баланс каждому продавцу
+            for item in order.items.select_related('seller').all():
+                if item.seller and item.seller_amount:
+                    item.seller.balance += item.seller_amount * item.quantity
+                    item.seller.save()
+
         except Order.DoesNotExist:
             return HttpResponse(status=400)
 

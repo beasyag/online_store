@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Category, ProductSize, \
-    ProductImage, Product, Size, HeroVideo, ProductType, Subcategory
+    ProductImage, Product, Size, HeroVideo, Subcategory
 
 
 class ProductImageInline(admin.TabularInline):
@@ -16,14 +16,6 @@ class SubcategoryInline(admin.TabularInline):
     extra = 2
     prepopulated_fields = {'slug': ('name',)}
 
-class ProductTypeAdmin(admin.ModelAdmin):
-    list_display = (
-        'name', 'has_sizes', 'has_shoe_sizes', 'has_color',
-        'has_material', 'has_fragrance_notes', 'has_metal_type',
-        'has_volume', 'has_weight'
-    )
-    prepopulated_fields = {'slug': ('name',)}
-
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'price', 'color')
     list_filter = ('category', 'color')
@@ -32,7 +24,7 @@ class ProductAdmin(admin.ModelAdmin):
     inlines = [ProductSizeInline, ProductImageInline]
     fieldsets = (
         ('Basic Info', {
-            'fields': ('seller', 'product_type', 'name', 'slug', 'category', 'subcategory', 'price', 'description', 'main_image')
+            'fields': ('seller', 'name', 'slug', 'category', 'subcategory', 'price', 'description', 'main_image')
         }),
         ('Common Attributes', {
             'fields': ('color', 'material'),
@@ -64,7 +56,6 @@ class HeroVideoAdmin(admin.ModelAdmin):
     list_display = ('title', 'is_active', 'created_at')
     list_filter = ('is_active',)
 
-admin.site.register(ProductType, ProductTypeAdmin)
 admin.site.register(HeroVideo, HeroVideoAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Category, CategoryAdmin)

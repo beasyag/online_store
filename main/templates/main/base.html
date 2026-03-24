@@ -8,23 +8,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Helvetica:wght@400;500;600;700&display=swap');
-        body { font-family: 'Helvetica, sans-serif; }
+        body { font-family: Helvetica, sans-serif; }
 
         .product-image { transition: transform 0.3s ease; }
         .product-card:hover .product-image { transform: scale(1.05); }
-
-        .nav-link { position: relative; transition: all 0.3s ease; }
-        .nav-link:hover::after,
-        .nav-link.active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 100%;
-            height: 1px;
-            background-color: black;
-        }
 
         .mobile-menu {
             transform: translateX(-100%);
@@ -37,7 +24,6 @@
             display: block;
             width: 25px;
             height: 2px;
-            background-color: black;
             margin: 5px 0;
             transition: 0.3s;
         }
@@ -51,119 +37,130 @@
         .htmx-indicator { opacity: 0; transition: opacity 200ms ease-in; }
         .htmx-request .htmx-indicator,
         .htmx-request.htmx-indicator { opacity: 1; }
+
+        .header-text { color: white; transition: color 0.3s ease; }
+        .header-bg { display: block; width: 25px; height: 1.5px; background-color: white; margin: 5px 0; transition: all 0.3s; }
+
+        #site-header.scrolled .header-text { color: black; }
+        #site-header.scrolled .header-bg { background-color: black; }
+        #site-header.scrolled { background-color: white; border-bottom: 0.5px solid #f3f4f6; }
     </style>
 </head>
 
 <body class="bg-white">
 
-    <!-- Mobile Menu Overlay -->
+    <!-- Mobile Overlay -->
     <div id="overlay" class="overlay fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"></div>
 
     <!-- Mobile Menu -->
     <div id="mobileMenu" class="mobile-menu fixed top-0 left-0 w-80 h-full bg-white z-50 md:hidden shadow-lg">
         <div class="p-6">
             <div class="flex justify-between items-center mb-8">
-                <h2 class="text-lg font-bold tracking-tight">Enfants Riches
-                                                            Déprimés</h2>
+                <h2 class="text-sm font-bold tracking-tight leading-tight" style="font-family: serif;">
+                    Enfants Riches<br>Déprimés
+                </h2>
                 <button id="closeMenu" class="hamburger active">
-                    <span></span><span></span><span></span>
+                    <span style="background-color: black;"></span>
+                    <span style="background-color: black;"></span>
+                    <span style="background-color: black;"></span>
                 </button>
             </div>
-            <nav class="space-y-6">
-                <a href="{% url 'main:index' %}"
-                   hx-get="{% url 'main:index' %}"
-                   hx-target="#main-content"
-                   hx-push-url="true"
-                   class="mobile-nav-link block text-lg font-medium text-gray-900 hover:text-gray-700 py-2 border-b border-gray-200">
-                   HOME
+
+            <div class="space-y-4">
+                {% if request.user.is_authenticated %}
+                <a href="{% url 'users:profile' %}"
+                   class="block text-sm font-medium text-gray-900 uppercase tracking-wide hover:text-gray-500">
+                   ACCOUNT
                 </a>
-                {% for category in categories %}
-                <a href="{% url 'main:catalog' category.slug %}"
-                   hx-get="{% url 'main:catalog' category.slug %}"
-                   hx-target="#main-content"
-                   hx-push-url="true"
-                   class="mobile-nav-link block text-lg font-medium text-gray-900 hover:text-gray-700 py-2 border-b border-gray-200 {% if current_category == category.slug %}active{% endif %}">
-                   {{ category.name|upper }}
+                <a href="{% url 'users:addresses' %}"
+                   class="block text-sm font-medium text-gray-900 uppercase tracking-wide hover:text-gray-500">
+                   ADDRESSES
                 </a>
-                {% endfor %}
-            </nav>
-            <div class="mt-8 space-y-4">
-                <a href="#" class="block text-sm font-medium text-gray-900 hover:text-gray-700 py-2">SEARCH</a>
-                {% if request.user.is_authenticated and request.user.is_seller %}
+                <a href="{% url 'users:order_history' %}"
+                   class="block text-sm font-medium text-gray-900 uppercase tracking-wide hover:text-gray-500">
+                   ORDERS
+                </a>
+                {% if request.user.role == 'seller' %}
                 <a href="{% url 'sellers:dashboard' %}"
-                   class="text-sm font-medium text-gray-900 uppercase hover:text-gray-600">
-                    SELLER
+                   onclick="closeMobileMenu()"
+                   class="block text-sm font-medium text-gray-900 uppercase tracking-wide hover:text-gray-500">
+                   SELLER
                 </a>
                 {% endif %}
                 <a href="{% url 'chat:list' %}"
-                   class="text-sm font-medium text-gray-900 uppercase hover:text-gray-600">
-                    MESSAGES
+                   class="block text-sm font-medium text-gray-900 uppercase tracking-wide hover:text-gray-500">
+                   MESSAGES
                 </a>
-                <a href="{% url 'users:profile' %}"
-                   hx-get="{% url 'users:profile' %}"
-                   hx-target="#main-content"
-                   hx-push-url="true"
-                   class="block text-sm font-medium text-gray-900 uppercase hover:text-gray-600">
-                   ACCOUNT
+                <a href="{% url 'users:logout' %}"
+                   class="block text-sm font-medium text-gray-900 uppercase tracking-wide hover:text-gray-500">
+                   LOGOUT
                 </a>
-                <a href="#" id="mobileCart" class="block text-sm font-medium text-gray-900 hover:text-gray-700 py-2">CART (0)</a>
+                {% else %}
+                <a href="{% url 'users:login' %}"
+                   class="block text-sm font-medium text-gray-900 uppercase tracking-wide hover:text-gray-500">
+                   LOGIN
+                </a>
+                <a href="{% url 'users:register' %}"
+                   class="block text-sm font-medium text-gray-900 uppercase tracking-wide hover:text-gray-500">
+                   CREATE ACCOUNT
+                </a>
+                {% endif %}
+                <a href="#" id="mobileCart"
+                   class="block text-sm font-medium text-gray-900 uppercase tracking-wide hover:text-gray-500">
+                   CART (0)
+                </a>
             </div>
         </div>
     </div>
 
     <!-- Header -->
     <header class="fixed top-0 left-0 right-0 z-30 px-6 py-4" id="site-header">
-        <div class="flex justify-between items-start">
+        <div class="flex justify-between items-center">
 
             <!-- Logo -->
-            <div class="flex-shrink-0">
-                <a href="{% url 'main:index' %}"
-                   hx-get="{% url 'main:index' %}"
-                   hx-target="#main-content"
-                   hx-push-url="true">
-                    <h1 class="text-sm font-bold tracking-tight leading-tight uppercase header-text"
-                        style="font-family: serif; max-width: 120px;">
-                        Main
-                    </h1>
-                </a>
-            </div>
-
-            <!-- Center Nav -->
-            <nav class="hidden md:flex items-center space-x-8 absolute left-1/2 -translate-x-1/2 top-4">
-                {% for category in categories %}
-                <a href="{% url 'main:catalog' category.slug %}"
-                   hx-get="{% url 'main:catalog' category.slug %}"
-                   hx-target="#main-content"
-                   hx-push-url="true"
-                   class="text-xs font-bold tracking-[0.15em] uppercase header-text hover:opacity-60 transition-opacity
-                   {% if current_category == category.slug %}opacity-60{% endif %}">
-                   {{ category.name }}
-                </a>
-                {% endfor %}
-            </nav>
+            <a href="{% url 'main:index' %}"
+               hx-get="{% url 'main:index' %}"
+               hx-target="#main-content"
+               hx-push-url="true"
+               class="flex-shrink-0">
+                <h1 class="text-sm font-bold tracking-tight leading-tight header-text"
+                    style="font-family: serif;">
+                    Enfants Riches<br>Déprimés
+                </h1>
+            </a>
 
             <!-- Right links -->
-            <div class="hidden md:flex items-center space-x-6">
-                <div class="relative" id="mobile-search-wrapper">
-                    <button id="mobile-search-toggle"
-                            hx-get="{% url 'main:catalog_all' %}?show_search=true"
-                            hx-target="#mobile-search-wrapper"
-                            hx-swap="innerHTML"
-                            class="text-xs font-bold tracking-[0.15em] uppercase header-text hover:opacity-60 transition-opacity">
-                        SEARCH
-                    </button>
+            <div class="hidden md:flex md:items-center md:gap-6">
+
+                <button type="button"
+                        onclick="openCatalogModal()"
+                        class="m-0 cursor-pointer border-0 bg-transparent p-0 text-xs font-bold uppercase leading-none tracking-[0.15em] header-text hover:opacity-60 transition-opacity">
+                    CATALOG
+                </button>
+
+                <!-- Search -->
+                <div class="relative flex items-center" id="mobile-search-wrapper">
+                    <input id="search"
+                           name="q"
+                           type="text"
+                           value="{{ search_query|default:'' }}"
+                           placeholder="SEARCH"
+                           class="m-0 w-20 appearance-none border-0 bg-transparent p-0 text-right text-xs font-bold uppercase leading-none tracking-[0.15em] header-text placeholder:opacity-100 placeholder-current focus:outline-none focus:ring-0"
+                           hx-get="{% url 'main:catalog_all' %}"
+                           hx-target="#main-content"
+                           hx-push-url="true"
+                           hx-trigger="input delay:400ms"
+                           hx-include="[name='q']">
                 </div>
 
-                <!-- Account с дропдауном -->
-                <div class="relative" id="account-dropdown-wrapper">
-                    <button onclick="toggleAccountMenu()"
-                            class="text-xs font-bold tracking-[0.15em] uppercase header-text hover:opacity-60 transition-opacity">
+                <!-- Account dropdown -->
+                <div class="relative flex items-center" id="account-dropdown-wrapper">
+                    <button type="button"
+                            onclick="toggleAccountMenu()"
+                            class="m-0 cursor-pointer border-0 bg-transparent p-0 text-xs font-bold uppercase leading-none tracking-[0.15em] header-text hover:opacity-60 transition-opacity">
                         ACCOUNT
                     </button>
-
-                    <!-- Dropdown меню -->
-                    <div id="account-menu"
-                         class="hidden absolute right-0 top-8 w-48 z-50">
+                    <div id="account-menu" class="hidden absolute right-0 top-8 w-48 z-50">
                         <div class="bg-black py-4 px-6 space-y-3">
                             {% if request.user.is_authenticated %}
                             <a href="{% url 'users:profile' %}"
@@ -171,7 +168,7 @@
                                hx-target="#main-content"
                                hx-push-url="true"
                                onclick="closeAccountMenu()"
-                               class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60 transition-opacity">
+                               class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60">
                                 ACCOUNT DETAILS
                             </a>
                             <a href="{% url 'users:addresses' %}"
@@ -179,7 +176,7 @@
                                hx-target="#main-content"
                                hx-push-url="true"
                                onclick="closeAccountMenu()"
-                               class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60 transition-opacity">
+                               class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60">
                                 ADDRESSES
                             </a>
                             <a href="{% url 'users:order_history' %}"
@@ -187,20 +184,25 @@
                                hx-target="#main-content"
                                hx-push-url="true"
                                onclick="closeAccountMenu()"
-                               class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60 transition-opacity">
+                               class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60">
                                 ORDER HISTORY
                             </a>
-                            {% if request.user.is_seller %}
+                            {% if request.user.role == 'seller' %}
                             <a href="{% url 'sellers:dashboard' %}"
                                onclick="closeAccountMenu()"
-                               class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60 transition-opacity">
+                               class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60">
                                 SELLER DASHBOARD
                             </a>
                             {% endif %}
+                            <a href="{% url 'chat:list' %}"
+                               onclick="closeAccountMenu()"
+                               class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60">
+                                MESSAGES
+                            </a>
                             <div class="border-t border-gray-700 pt-3">
                                 <a href="{% url 'users:logout' %}"
                                    onclick="closeAccountMenu()"
-                                   class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60 transition-opacity">
+                                   class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60">
                                     LOGOUT
                                 </a>
                             </div>
@@ -210,7 +212,7 @@
                                hx-target="#main-content"
                                hx-push-url="true"
                                onclick="closeAccountMenu()"
-                               class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60 transition-opacity">
+                               class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60">
                                 LOGIN
                             </a>
                             <a href="{% url 'users:register' %}"
@@ -218,7 +220,7 @@
                                hx-target="#main-content"
                                hx-push-url="true"
                                onclick="closeAccountMenu()"
-                               class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60 transition-opacity">
+                               class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60">
                                 CREATE ACCOUNT
                             </a>
                             {% endif %}
@@ -227,13 +229,18 @@
                 </div>
 
                 <a href="#" id="desktopCart"
-                   class="text-xs font-bold tracking-[0.15em] uppercase header-text hover:opacity-60 transition-opacity">
+                   class="inline-flex items-center text-xs font-bold uppercase leading-none tracking-[0.15em] header-text hover:opacity-60">
                     CART (0)
                 </a>
             </div>
 
-            <!-- Mobile buttons -->
+            <!-- Mobile right -->
             <div class="md:hidden flex items-center gap-4">
+                <button type="button"
+                        onclick="openCatalogModal()"
+                        class="text-xs font-bold uppercase tracking-[0.15em] header-text hover:opacity-60">
+                    CATALOG
+                </button>
                 <a href="#" id="mobileCartHeader"
                    class="text-xs font-bold header-text">CART (0)</a>
                 <button id="menuToggle" class="hamburger">
@@ -246,149 +253,173 @@
         </div>
     </header>
 
-<!-- Хедер прозрачный — контент начинается с самого верха -->
-<div id="cart-container"></div>
-<div class="htmx-indicator fixed top-0 left-0 w-full h-0.5 bg-white z-50"></div>
+    <!-- Cart container -->
+    <div id="cart-container"></div>
 
-<style>
-    /* Прозрачный хедер — текст белый поверх видео/изображения */
-    .header-text {
-        color: white;
-        transition: color 0.3s ease;
-    }
-
-    .header-bg {
-        display: block;
-        width: 25px;
-        height: 1.5px;
-        background-color: white;
-        margin: 5px 0;
-        transition: all 0.3s;
-    }
-
-    /* Когда страница прокручена — хедер становится белым с тёмным текстом */
-    #site-header.scrolled .header-text {
-        color: black;
-    }
-
-    #site-header.scrolled .header-bg {
-        background-color: black;
-    }
-
-    #site-header.scrolled {
-        background-color: white;
-        border-bottom: 0.5px solid #f3f4f6;
-    }
-
-    /* Активная категория */
-    .nav-link.active {
-        font-weight: 700;
-    }
-</style>
-
-
-    <!-- Loading Indicator -->
-    <div class="htmx-indicator fixed top-0 left-0 w-full h-1 bg-black z-50"></div>
+    <!-- Loading indicator -->
+    <div class="htmx-indicator fixed top-0 left-0 w-full h-0.5 bg-black z-50"></div>
 
     <!-- Main Content -->
     <div id="main-content">
         {% block content %}{% endblock %}
     </div>
 
+    <!-- Footer -->
+    <footer class="border-t border-gray-100 px-8 py-6">
+        <div class="flex justify-between items-center">
+            <p class="text-xs text-gray-400 tracking-wide uppercase">
+                MAIN © {% now "Y" %}
+            </p>
+            <div class="flex gap-6">
+                <a href="#" class="text-xs text-gray-400 uppercase tracking-wide hover:text-gray-900">Stockists</a>
+                <a href="#" class="text-xs text-gray-400 uppercase tracking-wide hover:text-gray-900">Contact</a>
+                <a href="#" class="text-xs text-gray-400 uppercase tracking-wide hover:text-gray-900">Legal</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Catalog Modal -->
+    <div id="catalog-modal" class="fixed inset-0 z-50 hidden" onclick="closeCatalogModal(event)">
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div id="catalog-panel"
+             class="absolute top-0 left-0 h-full w-full max-w-sm bg-white overflow-y-auto"
+             style="transform: translateX(-100%); transition: transform 0.3s ease;">
+
+            <div class="flex justify-between items-center px-8 py-6 border-b border-gray-100 sticky top-0 bg-white z-10">
+                <p class="text-xs tracking-[0.3em] uppercase text-gray-400">Catalog</p>
+                <button onclick="closeCatalogModal()"
+                        class="text-gray-400 hover:text-gray-900 text-2xl leading-none">×</button>
+            </div>
+
+            <div class="px-8 py-6">
+                <a href="{% url 'main:catalog_all' %}"
+                   hx-get="{% url 'main:catalog_all' %}"
+                   hx-target="#main-content"
+                   hx-push-url="true"
+                   onclick="closeCatalogModal()"
+                   class="block py-4 border-b border-gray-50 text-xs font-bold tracking-[0.2em] uppercase text-gray-900 hover:text-gray-400 transition-colors">
+                    All Products
+                </a>
+
+                {% for category in categories %}
+                <div class="border-b border-gray-50">
+                    <div class="flex items-center justify-between py-4">
+                        <a href="{% url 'main:catalog' category.slug %}"
+                           hx-get="{% url 'main:catalog' category.slug %}"
+                           hx-target="#main-content"
+                           hx-push-url="true"
+                           onclick="closeCatalogModal()"
+                           class="text-xs font-bold tracking-[0.2em] uppercase text-gray-900 hover:text-gray-400 transition-colors">
+                            {{ category.name }}
+                        </a>
+                        {% if category.subcategories.all %}
+                        <button onclick="toggleSubcategories('{{ category.slug }}')"
+                                id="toggle-btn-{{ category.slug }}"
+                                class="text-gray-400 hover:text-gray-900 w-8 h-8 flex items-center justify-center text-lg">
+                            +
+                        </button>
+                        {% endif %}
+                    </div>
+                    {% if category.subcategories.all %}
+                    <div id="sub-{{ category.slug }}" class="hidden pb-3 pl-4 space-y-2">
+                        {% for subcategory in category.subcategories.all %}
+                        <a href="{% url 'main:catalog_sub' category.slug subcategory.slug %}"
+                           hx-get="{% url 'main:catalog_sub' category.slug subcategory.slug %}"
+                           hx-target="#main-content"
+                           hx-push-url="true"
+                           onclick="closeCatalogModal()"
+                           class="block py-1 text-xs tracking-[0.15em] uppercase text-gray-500 hover:text-gray-900 transition-colors">
+                            → {{ subcategory.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
     <script>
+        // ── CSRF ──────────────────────────────────────────────
         function getCookie(name) {
             const value = `; ${document.cookie}`;
             const parts = value.split(`; ${name}=`);
             if (parts.length === 2) return parts.pop().split(';').shift();
             return null;
         }
-
-        // Ensure CSRF header is present for all HTMX non-GET requests.
-        document.body.addEventListener('htmx:configRequest', function(event) {
-            const csrfToken = getCookie('csrftoken');
-            if (csrfToken) {
-                event.detail.headers['X-CSRFToken'] = csrfToken;
-            }
+        document.body.addEventListener('htmx:configRequest', function(e) {
+            const token = getCookie('csrftoken');
+            if (token) e.detail.headers['X-CSRFToken'] = token;
         });
 
-         /* Хедер меняет цвет при скролле */
+        // ── HEADER ────────────────────────────────────────────
+        function initHeader() {
+            const header = document.getElementById('site-header');
+            const isHome = document.querySelector('.hero-section') !== null;
+            if (isHome) {
+                header.classList.remove('scrolled');
+            } else {
+                header.classList.add('scrolled');
+            }
+        }
+
         window.addEventListener('scroll', function() {
             const header = document.getElementById('site-header');
-            if (window.scrollY > 50) {
-                header.classList.add('scrolled');
+            const isHome = document.querySelector('.hero-section') !== null;
+            if (isHome) {
+                header.classList.toggle('scrolled', window.scrollY > 80);
             } else {
-                header.classList.remove('scrolled');
+                header.classList.add('scrolled');
             }
         });
 
-        /* Account dropdown */
+        document.addEventListener('htmx:afterSettle', initHeader);
+
+        // ── ACCOUNT DROPDOWN ──────────────────────────────────
         function toggleAccountMenu() {
-            const menu = document.getElementById('account-menu');
-            menu.classList.toggle('hidden');
+            document.getElementById('account-menu').classList.toggle('hidden');
         }
-
         function closeAccountMenu() {
-            const menu = document.getElementById('account-menu');
-            menu.classList.add('hidden');
+            document.getElementById('account-menu').classList.add('hidden');
         }
-
-        /* Закрыть дропдаун при клике вне */
         document.addEventListener('click', function(e) {
             const wrapper = document.getElementById('account-dropdown-wrapper');
-            if (!wrapper.contains(e.target)) {
-                closeAccountMenu();
-            }
+            if (wrapper && !wrapper.contains(e.target)) closeAccountMenu();
         });
 
-        /* Закрыть после HTMX навигации */
-        document.addEventListener('htmx:afterRequest', function() {
-            closeAccountMenu();
-            closeMobileMenu();
-        });
+        // ── CATALOG MODAL ─────────────────────────────────────
         function openCatalogModal() {
             const modal = document.getElementById('catalog-modal');
             const panel = document.getElementById('catalog-panel');
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
-            // анимация появления
-            panel.style.transform = 'translateX(-100%)';
-            panel.style.transition = 'transform 0.3s ease';
             setTimeout(() => panel.style.transform = 'translateX(0)', 10);
         }
-
         function closeCatalogModal(event) {
-            // закрыть только если клик по overlay, а не по панели
-            if (event && document.getElementById('catalog-panel').contains(event.target)) return;
-            const modal = document.getElementById('catalog-modal');
             const panel = document.getElementById('catalog-panel');
+            if (event && panel.contains(event.target)) return;
             panel.style.transform = 'translateX(-100%)';
             setTimeout(() => {
-                modal.classList.add('hidden');
+                document.getElementById('catalog-modal').classList.add('hidden');
                 document.body.style.overflow = '';
             }, 300);
         }
-
-        function toggleSubcategories(id) {
-            const el = document.getElementById(id);
-            const categorySlug = id.replace('sub-', '');
-            const btn = document.getElementById('toggle-' + categorySlug);
-            const isHidden = el.classList.contains('hidden');
-            el.classList.toggle('hidden');
-            btn.textContent = isHidden ? '−' : '+';
+        function toggleSubcategories(slug) {
+            const sub = document.getElementById('sub-' + slug);
+            const btn = document.getElementById('toggle-btn-' + slug);
+            const hidden = sub.classList.contains('hidden');
+            sub.classList.toggle('hidden');
+            btn.textContent = hidden ? '−' : '+';
         }
-
-        // закрыть по Escape
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') closeCatalogModal();
         });
 
-        // закрыть после HTMX навигации
-        document.addEventListener('htmx:afterRequest', () => {
-            const modal = document.getElementById('catalog-modal');
-            if (!modal.classList.contains('hidden')) closeCatalogModal();
-        });
+        // ── MOBILE MENU ───────────────────────────────────────
         document.addEventListener('DOMContentLoaded', function() {
             initHeader();
+
             const menuToggle = document.getElementById('menuToggle');
             const closeMenu = document.getElementById('closeMenu');
             const mobileMenu = document.getElementById('mobileMenu');
@@ -408,28 +439,26 @@
                 document.body.style.overflow = '';
             }
 
+            window.closeMobileMenu = closeMobileMenu;
+
             menuToggle.addEventListener('click', openMobileMenu);
             closeMenu.addEventListener('click', closeMobileMenu);
             overlay.addEventListener('click', closeMobileMenu);
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 768) closeMobileMenu();
+            });
 
-            document.addEventListener('htmx:afterRequest', closeMobileMenu);
-
+            // ── CART ──────────────────────────────────────────
             const desktopCart = document.getElementById('desktopCart');
             const mobileCart = document.getElementById('mobileCart');
             const mobileCartHeader = document.getElementById('mobileCartHeader');
 
-            function updateHeaderCartCount(count) {
-                const cartText = `CART (${count})`;
-                if (desktopCart) desktopCart.textContent = cartText;
-                if (mobileCart) mobileCart.textContent = cartText;
-                if (mobileCartHeader) mobileCartHeader.textContent = cartText;
-            }
-
-            function updateCartCount() {
-                fetch('{% url "cart:cart_count" %}')
-                    .then(r => r.json())
-                    .then(data => updateHeaderCartCount(data.total_items));
-            }
+            window.updateHeaderCartCount = function(count) {
+                const text = `CART (${count})`;
+                if (desktopCart) desktopCart.textContent = text;
+                if (mobileCart) mobileCart.textContent = text;
+                if (mobileCartHeader) mobileCartHeader.textContent = text;
+            };
 
             function openCart() {
                 htmx.ajax('GET', '{% url "cart:cart_modal" %}', {
@@ -438,78 +467,36 @@
                 });
             }
 
-            updateCartCount();
-
             [desktopCart, mobileCart, mobileCartHeader].forEach(el => {
                 if (el) el.addEventListener('click', e => { e.preventDefault(); openCart(); });
             });
 
-            window.addEventListener('resize', () => {
-                if (window.innerWidth >= 768) closeMobileMenu();
-            });
-
-            document.addEventListener('htmx:afterSettle', () => {
-                const currentPath = window.location.pathname;
-                document.querySelectorAll('.nav-link, .mobile-nav-link').forEach(link => {
-                    link.classList.toggle('active', link.getAttribute('href') === currentPath);
-                });
-            });
+            fetch('{% url "cart:cart_count" %}')
+                .then(r => r.json())
+                .then(data => updateHeaderCartCount(data.total_items));
 
             document.addEventListener('cartUpdated', e => {
                 if (e.detail?.total_items !== undefined) {
                     updateHeaderCartCount(e.detail.total_items);
                 }
             });
-        });
 
-        window.updateHeaderCartCount = function(count) {
-            const cartText = `CART (${count})`;
-            ['desktopCart', 'mobileCart', 'mobileCartHeader'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.textContent = cartText;
+            // ── HTMX events ───────────────────────────────────
+            document.addEventListener('htmx:afterRequest', () => {
+                closeAccountMenu();
+                closeMobileMenu();
+                const modal = document.getElementById('catalog-modal');
+                if (modal && !modal.classList.contains('hidden')) closeCatalogModal();
             });
-        };
-        function initHeader() {
-            const header = document.getElementById('site-header');
-            const isHomePage = document.querySelector('.hero-section') !== null;
 
-            if (!isHomePage) {
-                // не главная страница — сразу тёмный хедер
-                header.classList.add('scrolled');
-            } else {
-                // главная — прозрачный пока не проскролили
-                header.classList.remove('scrolled');
-            }
-        };
-        window.addEventListener('scroll', function() {
-            const header = document.getElementById('site-header');
-            const isHomePage = document.querySelector('.hero-section') !== null;
-
-            if (isHomePage) {
-                if (window.scrollY > 80) {
-                    header.classList.add('scrolled');
-                } else {
-                    header.classList.remove('scrolled');
-                }
-            } else {
-                header.classList.add('scrolled');
-            }
-        });
-        document.addEventListener('htmx:afterSettle', function() {
-            initHeader();
+            document.addEventListener('htmx:afterSettle', () => {
+                const path = window.location.pathname;
+                document.querySelectorAll('.nav-link, .mobile-nav-link').forEach(link => {
+                    link.classList.toggle('active', link.getAttribute('href') === path);
+                });
+            });
         });
     </script>
+
 </body>
-<footer class="border-t border-gray-100 px-8 py-6">
-    <div class="flex justify-between items-center">
-        <p class="text-xs text-gray-400 tracking-wide uppercase">
-            MAIN © {% now "Y" %}
-        </p>
-        <div class="flex gap-6">
-            <a href="#" class="text-xs text-gray-400 uppercase tracking-wide hover:text-gray-900">Stockists</a>
-            <a href="#" class="text-xs text-gray-400 uppercase tracking-wide hover:text-gray-900">Contact</a>
-            <a href="#" class="text-xs text-gray-400 uppercase tracking-wide hover:text-gray-900">Legal</a>
-        </div>
-    </div>
-</footer>
 </html>
