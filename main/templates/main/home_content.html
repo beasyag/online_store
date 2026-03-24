@@ -22,20 +22,8 @@
                 New Season
             </p>
             <h1 class="text-5xl sm:text-7xl font-medium tracking-tight leading-none mb-12">
-                Enfants Riches<br>Déprimés
+                 The Good,<br>The Bad<br>and The Ugly
             </h1>
-            <div class="flex flex-wrap gap-4 justify-center">
-                {% for category in categories %}
-                <a href="{% url 'main:catalog' category.slug %}"
-                   hx-get="{% url 'main:catalog' category.slug %}"
-                   hx-target="#main-content"
-                   hx-push-url="true"
-                   class="border px-8 py-3 text-xs tracking-[0.2em] uppercase transition-colors
-                   {% if hero_video %}border-white hover:bg-white hover:text-black{% else %}border-gray-900 hover:bg-black hover:text-white{% endif %}">
-                    Shop {{ category.name }}
-                </a>
-                {% endfor %}
-            </div>
         </div>
     </section>
 
