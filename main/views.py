@@ -129,6 +129,9 @@ class ProductDetailView(DetailView):
             category=product.category
         ).exclude(id=product.id)[:4]
         context['current_category'] = product.category.slug
+        context['needs_size_selection'] = product.product_sizes.filter(
+            stock__gt=0
+        ).exists()
         return context
 
     def get(self, request, *args, **kwargs):

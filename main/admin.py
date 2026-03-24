@@ -7,14 +7,17 @@ class ProductImageInline(admin.TabularInline):
     model = ProductImage
     extra = 1
 
+
 class ProductSizeInline(admin.TabularInline):
     model = ProductSize
     extra = 1
+
 
 class SubcategoryInline(admin.TabularInline):
     model = Subcategory
     extra = 2
     prepopulated_fields = {'slug': ('name',)}
+
 
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'price', 'color')
@@ -23,30 +26,20 @@ class ProductAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     inlines = [ProductSizeInline, ProductImageInline]
     fieldsets = (
-        ('Basic Info', {
-            'fields': ('seller', 'name', 'slug', 'category', 'subcategory', 'price', 'description', 'main_image')
-        }),
-        ('Common Attributes', {
-            'fields': ('color', 'material'),
-        }),
-        ('Clothing / Shoe Sizes', {
-            'fields': ('shoe_size',),
-            'classes': ('collapse',),
-        }),
-        ('Perfume', {
-            'fields': ('fragrance_top_notes', 'fragrance_heart_notes', 'fragrance_base_notes', 'volume_ml'),
-            'classes': ('collapse',),
-        }),
-        ('Jewelry', {
-            'fields': ('metal_type', 'metal_purity', 'gemstone', 'weight_g'),
-            'classes': ('collapse',),
+        (None, {
+            'fields': (
+                'seller', 'name', 'slug', 'category', 'subcategory',
+                'price', 'color', 'size_kind', 'description', 'main_image',
+            )
         }),
     )
+
 
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'slug')
     prepopulated_fields = {'slug': ('name',)}
     inlines = [SubcategoryInline]
+
 
 class SizeAdmin(admin.ModelAdmin):
     list_display = ['name']
@@ -56,8 +49,8 @@ class HeroVideoAdmin(admin.ModelAdmin):
     list_display = ('title', 'is_active', 'created_at')
     list_filter = ('is_active',)
 
+
 admin.site.register(HeroVideo, HeroVideoAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Size, SizeAdmin)
-# Register your models here.

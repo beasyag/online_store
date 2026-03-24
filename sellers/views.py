@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.urls import reverse
 from django.contrib import messages
 from .models import Seller
-from .forms import SellerRegistrationForm, SellerProductForm
+from .forms import SellerRegistrationForm, SellerProductForm, SellerProductSizeFormSet
 from main.models import Product
 from orders.models import Order, OrderItem
 from decimal import Decimal
@@ -85,8 +85,11 @@ def product_add(request):
             product = form.save(commit=False)
             product.seller = seller
             product.save()
-            messages.success(request, 'Product added successfully.')
-            return redirect('sellers:products')
+            messages.success(
+                request,
+                'Product added. Add sizes and stock (e.g. EU 40, 41 for shoes).',
+            )
+            return redirect('sellers:product_edit', slug=product.slug)
     else:
         form = SellerProductForm()
 
@@ -106,15 +109,19 @@ def product_edit(request, slug):
 
     if request.method == 'POST':
         form = SellerProductForm(request.POST, request.FILES, instance=product)
-        if form.is_valid():
+        formset = SellerProductSizeFormSet(request.POST, instance=product)
+        if form.is_valid() and formset.is_valid():
             form.save()
+            formset.save()
             messages.success(request, 'Product updated successfully.')
             return redirect('sellers:products')
     else:
         form = SellerProductForm(instance=product)
+        formset = SellerProductSizeFormSet(instance=product)
 
     return TemplateResponse(request, 'sellers/product_form.html', {
         'form': form,
+        'formset': formset,
         'seller': seller,
         'product': product,
     })

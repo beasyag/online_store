@@ -37,6 +37,11 @@
                            {% if request.resolver_match.namespace == 'payouts' %}font-bold text-gray-900{% else %}font-normal text-gray-500 hover:text-gray-900{% endif %}">
                             Payouts
                         </a>
+                        <a href="{% url 'chat:list' %}"
+                           class="block text-sm tracking-wide uppercase transition-colors
+                           {% if request.resolver_match.namespace == 'chat' %}font-bold text-gray-900{% else %}font-normal text-gray-500 hover:text-gray-900{% endif %}">
+                            Messages
+                        </a>
                         <div class="border-t border-gray-100 pt-4">
                             <a href="{% url 'sellers:shop' seller.shop_slug %}"
                                class="block text-sm tracking-wide uppercase text-gray-400 hover:text-gray-600 transition-colors">

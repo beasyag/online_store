@@ -32,6 +32,49 @@
     </div>
 
     <div>
+        <label class="block text-xs tracking-[0.2em] uppercase text-gray-500 mb-2">Sizing</label>
+        {{ form.size_kind }}
+        <p class="text-xs text-gray-400 mt-2 tracking-wide">
+            For footwear choose <strong>Shoes</strong> — the product page will show “Shoe size”. Add numeric sizes (e.g. EU 40) and stock in the block below.
+        </p>
+        {% if form.size_kind.errors %}<p class="text-xs text-red-500 mt-1">{{ form.size_kind.errors }}</p>{% endif %}
+    </div>
+
+    {% if product %}
+    <div class="space-y-4 border border-gray-100 p-6">
+        <p class="text-xs tracking-[0.2em] uppercase text-gray-500">Sizes &amp; stock</p>
+        <p class="text-xs text-gray-400">Use clothing labels (XS–XXL) or EU shoe numbers (35–48) from the list. Extra labels can be added in admin → Sizes.</p>
+        {{ formset.management_form }}
+        {% if formset.non_form_errors %}
+        <p class="text-xs text-red-500">{{ formset.non_form_errors }}</p>
+        {% endif %}
+        <div class="space-y-6">
+            {% for f in formset %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end border-b border-gray-50 pb-4">
+                {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Size</label>
+                    {{ f.size }}
+                    {% if f.size.errors %}<p class="text-xs text-red-500 mt-1">{{ f.size.errors }}</p>{% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Stock</label>
+                    {{ f.stock }}
+                    {% if f.stock.errors %}<p class="text-xs text-red-500 mt-1">{{ f.stock.errors }}</p>{% endif %}
+                </div>
+                {% if f.DELETE %}
+                <div class="sm:col-span-2 flex items-center gap-2">
+                    {{ f.DELETE }}
+                    <span class="text-xs text-gray-500">Remove this row</span>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div>
         <label class="block text-xs tracking-[0.2em] uppercase text-gray-500 mb-2">Price (€)</label>
         {{ form.price }}
         {% if form.price.errors %}<p class="text-xs text-red-500 mt-1">{{ form.price.errors }}</p>{% endif %}

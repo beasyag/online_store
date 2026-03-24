@@ -8,15 +8,28 @@ from sellers.models import Seller
 
 @login_required(login_url='/users/login')
 def conversation_list(request):
-    conversations = Conversation.objects.filter(
-        buyer=request.user
-    ).prefetch_related('messages').order_by('-updated_at')
+    user = request.user
+    if getattr(user, 'is_seller', False):
+        from django.db.models import Q
+        conversations = Conversation.objects.filter(
+            Q(buyer=user) | Q(seller=user.seller)
+        ).prefetch_related('messages').order_by('-updated_at').distinct()
+    else:
+        conversations = Conversation.objects.filter(
+            buyer=user
+        ).prefetch_related('messages').order_by('-updated_at')
     return TemplateResponse(request, 'chat/list.html', {'conversations': conversations})
 
 
 @login_required(login_url='/users/login')
 def conversation_detail(request, conversation_id):
-    conversation = get_object_or_404(Conversation, id=conversation_id, buyer=request.user)
+    user = request.user
+    if getattr(user, 'is_seller', False):
+        from django.db.models import Q
+        conversation = get_object_or_404(Conversation, Q(id=conversation_id) & (Q(buyer=user) | Q(seller=user.seller)))
+    else:
+        conversation = get_object_or_404(Conversation, id=conversation_id, buyer=user)
+        
     messages_qs = conversation.messages.order_by('created_at')
     messages_qs.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
     return TemplateResponse(request, 'chat/detail.html', {
@@ -38,7 +51,13 @@ def start_conversation(request, shop_slug):
 @login_required(login_url='/users/login')
 def send_message(request, conversation_id):
     if request.method == 'POST':
-        conversation = get_object_or_404(Conversation, id=conversation_id, buyer=request.user)
+        user = request.user
+        if getattr(user, 'is_seller', False):
+            from django.db.models import Q
+            conversation = get_object_or_404(Conversation, Q(id=conversation_id) & (Q(buyer=user) | Q(seller=user.seller)))
+        else:
+            conversation = get_object_or_404(Conversation, id=conversation_id, buyer=user)
+            
         text = request.POST.get('text', '').strip()
         if text:
             Message.objects.create(

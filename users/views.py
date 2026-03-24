@@ -5,12 +5,26 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.urls import reverse
 from django.http import HttpResponse
 from django.template.response import TemplateResponse
+from django.utils.http import url_has_allowed_host_and_scheme
 from .forms import CustomUserCreationForm, CustomUserLoginForm, CustomUserUpdateForm, AddressForm, \
     CustomPasswordChangeForm, ProfileForm
 from .models import CustomUser, Address
 from django.contrib import messages
 from main.models import Product
 from orders.models import Order
+
+
+def _login_next_url(request):
+    url = (request.POST.get('next') or request.GET.get('next') or '').strip()
+    if not url:
+        return None
+    if url_has_allowed_host_and_scheme(
+        url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return url
+    return None
 
 
 @ensure_csrf_cookie
@@ -40,18 +54,21 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
+            target = _login_next_url(request) or reverse('main:index')
             if request.headers.get('HX-Request'):
-                return HttpResponse(headers={'HX-Redirect': reverse('main:index')})
-            return redirect('main:index')
+                return HttpResponse(headers={'HX-Redirect': target})
+            return redirect(target)
         messages.error(request, 'Invalid email or password')
+        next_q = request.POST.get('next', '') or request.GET.get('next', '')
         if request.headers.get('HX-Request'):
-            return TemplateResponse(request, 'users/login.html', {'form': form})
-        return render(request, 'users/login_page.html', {'form': form})  # ← полная страница
+            return TemplateResponse(request, 'users/login.html', {'form': form, 'next': next_q})
+        return render(request, 'users/login_page.html', {'form': form, 'next': next_q})
 
     form = CustomUserLoginForm()
+    next_q = request.GET.get('next', '')
     if request.headers.get('HX-Request'):
-        return TemplateResponse(request, 'users/login.html', {'form': form})
-    return render(request, 'users/login_page.html', {'form': form})  # ← полная страница
+        return TemplateResponse(request, 'users/login.html', {'form': form, 'next': next_q})
+    return render(request, 'users/login_page.html', {'form': form, 'next': next_q})
 
 
 @login_required(login_url='/users/login')

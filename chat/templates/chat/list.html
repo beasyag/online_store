@@ -1,7 +1,7 @@
 {% extends "main/base.html" %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto px-4 py-8">
+<div class="max-w-2xl mx-auto px-4 sm:px-6 pt-24 pb-8">
     <p class="text-xs tracking-[0.3em] uppercase text-gray-400 mb-2">Messages</p>
     <h1 class="text-2xl font-medium tracking-tight mb-8">Conversations</h1>
 
@@ -11,7 +11,13 @@
         <a href="{% url 'chat:detail' conversation.id %}"
            class="flex items-center justify-between px-6 py-5 border-b border-gray-50 hover:bg-gray-50 transition-colors">
             <div>
-                <p class="text-sm font-medium">{{ conversation.seller.shop_name }}</p>
+                <p class="text-sm font-medium">
+                    {% if request.user.is_seller and conversation.seller == request.user.seller %}
+                        {{ conversation.buyer.first_name }} {{ conversation.buyer.last_name }}
+                    {% else %}
+                        {{ conversation.seller.shop_name }}
+                    {% endif %}
+                </p>
                 {% with last=conversation.messages.last %}
                 {% if last %}
                 <p class="text-xs text-gray-400 mt-1">{{ last.text|truncatechars:50 }}</p>

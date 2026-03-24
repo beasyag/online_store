@@ -47,12 +47,9 @@ class Subcategory(models.Model):
 
 
 class Product(models.Model):
-    METAL_CHOICES = (
-        ('gold', 'Gold'),
-        ('silver', 'Silver'),
-        ('platinum', 'Platinum'),
-        ('rose_gold', 'Rose Gold'),
-    )
+    class SizeKind(models.TextChoices):
+        CLOTHING = 'clothing', 'Clothing'
+        SHOES = 'shoes', 'Shoes'
 
     seller = models.ForeignKey(
         'sellers.Seller',
@@ -81,24 +78,13 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    # Общие атрибуты
     color = models.CharField(max_length=100, blank=True)
-    material = models.CharField(max_length=100, blank=True)
-
-    # Обувь
-    shoe_size = models.CharField(max_length=20, blank=True)
-
-    # Парфюмерия
-    fragrance_top_notes = models.CharField(max_length=255, blank=True)
-    fragrance_heart_notes = models.CharField(max_length=255, blank=True)
-    fragrance_base_notes = models.CharField(max_length=255, blank=True)
-    volume_ml = models.PositiveIntegerField(null=True, blank=True)
-
-    # Украшения
-    metal_type = models.CharField(max_length=20, choices=METAL_CHOICES, blank=True)
-    metal_purity = models.CharField(max_length=10, blank=True)
-    gemstone = models.CharField(max_length=100, blank=True)
-    weight_g = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    size_kind = models.CharField(
+        max_length=20,
+        choices=SizeKind.choices,
+        default=SizeKind.CLOTHING,
+        help_text='Shoes: label as shoe sizes; add numeric EU/US rows via product sizes below.',
+    )
 
     def save(self, *args, **kwargs):
         if not self.slug:

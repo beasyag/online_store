@@ -1,32 +1,37 @@
 {% extends "main/base.html" %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto px-4 py-8">
-    <div class="flex items-center gap-4 mb-8 pb-6 border-b border-gray-100">
+<div class="max-w-2xl mx-auto px-4 sm:px-6 pt-24 pb-8 min-h-[calc(100vh-5rem)] flex flex-col">
+    <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100 shrink-0">
         <a href="{% url 'chat:list' %}"
-           class="text-xs tracking-wide uppercase text-gray-400 hover:text-gray-900">← Back</a>
-        <div>
+           class="text-xs tracking-wide uppercase text-gray-400 hover:text-gray-900 transition-colors">← Back</a>
+        <div class="min-w-0">
             <p class="text-xs tracking-[0.2em] uppercase text-gray-400">Conversation with</p>
-            <h1 class="text-lg font-medium">{{ conversation.seller.shop_name }}</h1>
+            <h1 class="text-lg font-medium text-gray-900 truncate">
+                {% if request.user.is_seller and conversation.seller == request.user.seller %}
+                    {{ conversation.buyer.first_name }} {{ conversation.buyer.last_name }}
+                {% else %}
+                    {{ conversation.seller.shop_name }}
+                {% endif %}
+            </h1>
         </div>
     </div>
 
     <!-- Messages -->
-    <div class="space-y-4 mb-8 min-h-64" id="messages">
+    <div class="flex-1 min-h-0 overflow-y-auto space-y-4 mb-6 pr-1" id="messages">
         {% for message in messages %}
-        <div class="flex {% if message.sender == request.user %}justify-end{% endif %}">
-            <div class="max-w-sm">
-                <div class="{% if message.sender == request.user %}bg-black text-white{% else %}bg-gray-100 text-gray-900{% endif %} px-4 py-3 text-sm">
-                    {{ message.text }}
+        <div class="flex {% if message.sender == request.user %}justify-end{% else %}justify-start{% endif %}">
+            <div class="max-w-[85%] sm:max-w-sm">
+                <div class="rounded-2xl px-4 py-2.5 text-sm leading-relaxed break-words {% if message.sender == request.user %}bg-black text-white rounded-br-md{% else %}bg-gray-100 text-gray-900 rounded-bl-md{% endif %}">
+                    {{ message.text|linebreaksbr }}
                 </div>
-                <p class="text-xs text-gray-400 mt-1
-                   {% if message.sender == request.user %}text-right{% endif %}">
+                <p class="text-[11px] text-gray-400 mt-1.5 px-1 {% if message.sender == request.user %}text-right{% endif %}">
                     {{ message.created_at|date:"H:i" }}
                 </p>
             </div>
         </div>
         {% empty %}
-        <div class="text-center py-12">
+        <div class="text-center py-16">
             <p class="text-sm text-gray-400">Start the conversation.</p>
         </div>
         {% endfor %}
@@ -35,17 +40,24 @@
     <!-- Send Message -->
     <form method="post"
           action="{% url 'chat:send' conversation.id %}"
-          class="flex gap-3 border-t border-gray-100 pt-6">
+          class="flex gap-3 border-t border-gray-100 pt-6 shrink-0">
         {% csrf_token %}
         <input type="text"
                name="text"
-               placeholder="Write a message..."
+               placeholder="Write a message…"
                autocomplete="off"
-               class="flex-1 border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-black">
+               maxlength="2000"
+               class="flex-1 min-w-0 border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors">
         <button type="submit"
-                class="bg-black text-white px-6 py-3 text-xs tracking-[0.2em] uppercase hover:bg-gray-800 transition-colors">
+                class="shrink-0 bg-black text-white px-5 sm:px-6 py-3 text-xs tracking-[0.2em] uppercase hover:bg-gray-800 transition-colors">
             Send
         </button>
     </form>
 </div>
+<script>
+    (function() {
+        var el = document.getElementById('messages');
+        if (el) el.scrollTop = el.scrollHeight;
+    })();
+</script>
 {% endblock %}

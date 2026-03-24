@@ -72,11 +72,12 @@
             </p>
             {% endif %}
 
-            <!-- Clothing Sizes -->
             {% if product.product_sizes.all %}
             <div>
-                <h3 class="text-xs tracking-[0.2em] uppercase text-gray-500 mb-3">Size</h3>
-                <div class="grid grid-cols-4 gap-2">
+                <h3 class="text-xs tracking-[0.2em] uppercase text-gray-500 mb-3">
+                    {% if product.size_kind == 'shoes' %}Shoe size{% else %}Size{% endif %}
+                </h3>
+                <div class="{% if product.size_kind == 'shoes' %}grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2{% else %}grid grid-cols-4 gap-2{% endif %}">
                     {% for product_size in product.product_sizes.all %}
                     <div class="size-option">
                         <input type="radio"
@@ -98,40 +99,6 @@
             </div>
             {% endif %}
 
-
-            <!-- Volume (Perfume) -->
-            {% if product.volume_ml %}
-            <div>
-                <h3 class="text-xs tracking-[0.2em] uppercase text-gray-500 mb-3">Volume</h3>
-                <p class="text-sm text-gray-600">{{ product.volume_ml }} ml</p>
-            </div>
-            {% endif %}
-
-            <!-- Metal (Jewelry) -->
-            {% if product.metal_type %}
-            <div>
-                <h3 class="text-xs tracking-[0.2em] uppercase text-gray-500 mb-3">Metal</h3>
-                <p class="text-sm text-gray-600">
-                    {{ product.get_metal_type_display }}
-                    {% if product.metal_purity %}· {{ product.metal_purity }}{% endif %}
-                </p>
-            </div>
-            {% endif %}
-
-            {% if product.weight_g %}
-            <div>
-                <h3 class="text-xs tracking-[0.2em] uppercase text-gray-500 mb-3">Weight</h3>
-                <p class="text-sm text-gray-600">{{ product.weight_g }} g</p>
-            </div>
-            {% endif %}
-
-            {% if product.gemstone %}
-            <div>
-                <h3 class="text-xs tracking-[0.2em] uppercase text-gray-500 mb-3">Gemstone</h3>
-                <p class="text-sm text-gray-600">{{ product.gemstone }}</p>
-            </div>
-            {% endif %}
-
             <!-- Add to Cart -->
             <div class="space-y-3">
                 <button id="add-to-cart-btn"
@@ -144,31 +111,6 @@
                 </button>
             </div>
 
-            <!-- Fragrance Notes -->
-            {% if product.fragrance_top_notes or product.fragrance_heart_notes or product.fragrance_base_notes %}
-            <div class="border-t border-gray-100 pt-6">
-                <h3 class="text-xs tracking-[0.2em] uppercase text-gray-500 mb-4">Fragrance Notes</h3>
-                {% if product.fragrance_top_notes %}
-                <div class="flex gap-3 mb-2">
-                    <span class="text-xs text-gray-400 w-12">Top</span>
-                    <span class="text-xs text-gray-600">{{ product.fragrance_top_notes }}</span>
-                </div>
-                {% endif %}
-                {% if product.fragrance_heart_notes %}
-                <div class="flex gap-3 mb-2">
-                    <span class="text-xs text-gray-400 w-12">Heart</span>
-                    <span class="text-xs text-gray-600">{{ product.fragrance_heart_notes }}</span>
-                </div>
-                {% endif %}
-                {% if product.fragrance_base_notes %}
-                <div class="flex gap-3">
-                    <span class="text-xs text-gray-400 w-12">Base</span>
-                    <span class="text-xs text-gray-600">{{ product.fragrance_base_notes }}</span>
-                </div>
-                {% endif %}
-            </div>
-            {% endif %}
-
             <!-- Details -->
             {% if product.description %}
             <div class="border-t border-gray-100 pt-6">
@@ -179,25 +121,6 @@
             </div>
             {% endif %}
 
-            <!-- Material -->
-            {% if product.material %}
-            <div class="border-t border-gray-100 pt-6">
-                <h3 class="text-xs tracking-[0.2em] uppercase text-gray-500 mb-3">Material</h3>
-                <p class="text-sm text-gray-600">{{ product.material }}</p>
-            </div>
-            {% endif %}
-
-            <!-- Care — только для одежды -->
-            {% if product.product_sizes.all and not product.shoe_size %}
-            <div class="border-t border-gray-100 pt-6">
-                <h3 class="text-xs tracking-[0.2em] uppercase text-gray-500 mb-3">Care</h3>
-                <div class="text-sm text-gray-600 space-y-1">
-                    <p>Professional dry clean only</p>
-                    <p>Do not bleach</p>
-                    <p>Iron at low temperature</p>
-                </div>
-            </div>
-            {% endif %}
         </div>
     </div>
 
@@ -248,9 +171,7 @@
 </style>
 
 <script>
-    const HAS_SIZES = {{ product.product_type.has_sizes|yesno:"true,false" }};
-    const HAS_SHOE_SIZES = {{ product.product_type.has_shoe_sizes|yesno:"true,false" }};
-    const NEEDS_SIZE = HAS_SIZES || HAS_SHOE_SIZES;
+    const NEEDS_SIZE = {{ needs_size_selection|yesno:"true,false" }};
 
     let selectedSizeId = null;
 
