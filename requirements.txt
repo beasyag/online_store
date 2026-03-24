@@ -1,0 +1,15 @@
+asgiref==3.11.0
+Django==6.0
+django-allauth==65.15.0
+django-rest-framework==0.1.0
+djangorestframework==3.16.1
+djangorestframework-simplejwt==5.2.2
+dotenv==0.9.9
+PyJWT==2.10.1
+python-dotenv==1.2.2
+setuptools==80.9.0
+sqlparse==0.5.4
+tzdata==2025.2
+wheel==0.45.1
+psycopg2-binary>=2.9.9
+Pillow>=10.2.0
