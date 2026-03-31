@@ -5,10 +5,10 @@
         <h2 class="text-xl sm:text-2xl font-medium tracking-tight text-gray-900 uppercase">
             {% if current_subcategory %}
                 {{ current_subcategory.name|upper }}
-            {% elif current_category %}
-                {{ current_category|upper }}
+            {% elif current_category_obj %}
+                {{ current_category_obj.name|upper }}
             {% else %}
-                ALL PRODUCTS
+                ВСЕ ПРОДУКТЫ
             {% endif %}
         </h2>
         <button class="bg-black text-white px-4 py-2 text-sm font-medium uppercase hover:bg-gray-800 transition-colors w-full sm:w-auto" 

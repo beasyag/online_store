@@ -4,7 +4,7 @@ from decimal import Decimal
 
 
 class Cart(models.Model):
-    session_key = models.CharField(max_length=40, unique=True)
+    session_key = models.CharField(max_length=40, unique=True, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -66,7 +66,7 @@ class Cart(models.Model):
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, related_name='items', on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    product_size = models.ForeignKey(ProductSize, on_delete=models.CASCADE)
+    product_size = models.ForeignKey(ProductSize, on_delete=models.CASCADE, blank=True, null=True)
     quantity = models.PositiveIntegerField(default=1)
     added_at = models.DateTimeField(auto_now_add=True)
 

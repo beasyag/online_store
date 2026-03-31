@@ -74,10 +74,10 @@
 
             {% if product.product_sizes.all %}
             <div>
-                <h3 class="text-xs tracking-[0.2em] uppercase text-gray-500 mb-3">
-                    {% if product.size_kind == 'shoes' %}Shoe size{% else %}Size{% endif %}
+                  <h3 class="text-xs tracking-[0.2em] uppercase text-gray-500 mb-3">
+                    {% if product.size == 'shoes' %}Shoe size{% else %}Size{% endif %}
                 </h3>
-                <div class="{% if product.size_kind == 'shoes' %}grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2{% else %}grid grid-cols-4 gap-2{% endif %}">
+                <div class="{% if product.size == 'shoes' %}grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2{% else %}grid grid-cols-4 gap-2{% endif %}">
                     {% for product_size in product.product_sizes.all %}
                     <div class="size-option">
                         <input type="radio"
@@ -99,6 +99,7 @@
             </div>
             {% endif %}
 
+
             <!-- Add to Cart -->
             <div class="space-y-3">
                 <button id="add-to-cart-btn"
@@ -110,6 +111,7 @@
                     ADD TO WISHLIST
                 </button>
             </div>
+
 
             <!-- Details -->
             {% if product.description %}
@@ -171,8 +173,6 @@
 </style>
 
 <script>
-    const NEEDS_SIZE = {{ needs_size_selection|yesno:"true,false" }};
-
     let selectedSizeId = null;
 
     function changeMainImage(src) {

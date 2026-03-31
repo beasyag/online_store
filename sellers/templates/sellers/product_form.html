@@ -31,15 +31,6 @@
         {% if form.color.errors %}<p class="text-xs text-red-500 mt-1">{{ form.color.errors }}</p>{% endif %}
     </div>
 
-    <div>
-        <label class="block text-xs tracking-[0.2em] uppercase text-gray-500 mb-2">Sizing</label>
-        {{ form.size_kind }}
-        <p class="text-xs text-gray-400 mt-2 tracking-wide">
-            For footwear choose <strong>Shoes</strong> — the product page will show “Shoe size”. Add numeric sizes (e.g. EU 40) and stock in the block below.
-        </p>
-        {% if form.size_kind.errors %}<p class="text-xs text-red-500 mt-1">{{ form.size_kind.errors }}</p>{% endif %}
-    </div>
-
     {% if product %}
     <div class="space-y-4 border border-gray-100 p-6">
         <p class="text-xs tracking-[0.2em] uppercase text-gray-500">Sizes &amp; stock</p>

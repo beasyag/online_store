@@ -79,12 +79,6 @@ class Product(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     color = models.CharField(max_length=100, blank=True)
-    size_kind = models.CharField(
-        max_length=20,
-        choices=SizeKind.choices,
-        default=SizeKind.CLOTHING,
-        help_text='Shoes: label as shoe sizes; add numeric EU/US rows via product sizes below.',
-    )
 
     def save(self, *args, **kwargs):
         if not self.slug:

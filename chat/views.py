@@ -29,7 +29,7 @@ def conversation_detail(request, conversation_id):
         conversation = get_object_or_404(Conversation, Q(id=conversation_id) & (Q(buyer=user) | Q(seller=user.seller)))
     else:
         conversation = get_object_or_404(Conversation, id=conversation_id, buyer=user)
-        
+
     messages_qs = conversation.messages.order_by('created_at')
     messages_qs.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
     return TemplateResponse(request, 'chat/detail.html', {
@@ -54,10 +54,11 @@ def send_message(request, conversation_id):
         user = request.user
         if getattr(user, 'is_seller', False):
             from django.db.models import Q
-            conversation = get_object_or_404(Conversation, Q(id=conversation_id) & (Q(buyer=user) | Q(seller=user.seller)))
+            conversation = get_object_or_404(Conversation,
+                                             Q(id=conversation_id) & (Q(buyer=user) | Q(seller=user.seller)))
         else:
             conversation = get_object_or_404(Conversation, id=conversation_id, buyer=user)
-            
+
         text = request.POST.get('text', '').strip()
         if text:
             Message.objects.create(
