@@ -28,9 +28,38 @@
     </div>
 
     <div>
+        <label class="block text-xs tracking-[0.2em] uppercase text-gray-500 mb-2">Main Image</label>
+        {% if product and product.main_image %}
+        <img src="{{ product.main_image.url }}"
+             class="w-32 h-32 object-cover mb-3 bg-gray-100">
+        {% endif %}
+        {{ form.main_image }}
+        <p class="text-xs text-gray-400 mt-2">Use a clean product image. Existing image stays in place unless you upload a new one.</p>
+        {% if form.main_image.errors %}<p class="text-xs text-red-500 mt-1">{{ form.main_image.errors }}</p>{% endif %}
+    </div>
+
+    <div>
+        <label class="block text-xs tracking-[0.2em] uppercase text-gray-500 mb-2">Price ($)</label>
+        {{ form.price }}
+        {% if form.price.errors %}<p class="text-xs text-red-500 mt-1">{{ form.price.errors }}</p>{% endif %}
+    </div>
+
+    <div>
+        <label class="block text-xs tracking-[0.2em] uppercase text-gray-500 mb-2">Description</label>
+        {{ form.description }}
+        {% if form.description.errors %}<p class="text-xs text-red-500 mt-1">{{ form.description.errors }}</p>{% endif %}
+    </div>
+
+    <div>
         <label class="block text-xs tracking-[0.2em] uppercase text-gray-500 mb-2">Category</label>
         {{ form.category }}
         {% if form.category.errors %}<p class="text-xs text-red-500 mt-1">{{ form.category.errors }}</p>{% endif %}
+    </div>
+
+    <div>
+        <label class="block text-xs tracking-[0.2em] uppercase text-gray-500 mb-2">Subcategory</label>
+        {{ form.subcategory }}
+        {% if form.subcategory.errors %}<p class="text-xs text-red-500 mt-1">{{ form.subcategory.errors }}</p>{% endif %}
     </div>
 
     <div>
@@ -48,7 +77,7 @@
     {% if product %}
     <div class="space-y-4 border border-gray-100 p-6">
         <p class="text-xs tracking-[0.2em] uppercase text-gray-500">Sizes &amp; stock</p>
-        <p class="text-xs text-gray-400">Use clothing labels (XS–XXL) or EU shoe numbers (35–48) from the list. Extra labels can be added in admin → Sizes.</p>
+        <p class="text-xs text-gray-400">Select sizes based on the Size Kind category (e.g. clothing, shoes, accessories).</p>
         {{ formset.management_form }}
         {% if formset.non_form_errors %}
         <p class="text-xs text-red-500">{{ formset.non_form_errors }}</p>
@@ -77,30 +106,37 @@
             {% endfor %}
         </div>
     </div>
-    {% endif %}
 
-    <div>
-        <label class="block text-xs tracking-[0.2em] uppercase text-gray-500 mb-2">Price ($)</label>
-        {{ form.price }}
-        {% if form.price.errors %}<p class="text-xs text-red-500 mt-1">{{ form.price.errors }}</p>{% endif %}
-    </div>
-
-    <div>
-        <label class="block text-xs tracking-[0.2em] uppercase text-gray-500 mb-2">Description</label>
-        {{ form.description }}
-        {% if form.description.errors %}<p class="text-xs text-red-500 mt-1">{{ form.description.errors }}</p>{% endif %}
-    </div>
-
-    <div>
-        <label class="block text-xs tracking-[0.2em] uppercase text-gray-500 mb-2">Main Image</label>
-        {% if product and product.main_image %}
-        <img src="{{ product.main_image.url }}"
-             class="w-32 h-32 object-cover mb-3 bg-gray-100">
+    <div class="space-y-4 border border-gray-100 p-6 mt-6">
+        <p class="text-xs tracking-[0.2em] uppercase text-gray-500">Extra Photos</p>
+        <p class="text-xs text-gray-400">Add up to 3 extra images of your product.</p>
+        {{ image_formset.management_form }}
+        {% if image_formset.non_form_errors %}
+        <p class="text-xs text-red-500">{{ image_formset.non_form_errors }}</p>
         {% endif %}
-        {{ form.main_image }}
-        <p class="text-xs text-gray-400 mt-2">Use a clean product image. Existing image stays in place unless you upload a new one.</p>
-        {% if form.main_image.errors %}<p class="text-xs text-red-500 mt-1">{{ form.main_image.errors }}</p>{% endif %}
+        <div class="space-y-6">
+            {% for f in image_formset %}
+            <div class="grid grid-cols-1 gap-4 items-end border-b border-gray-50 pb-4">
+                {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Image</label>
+                    {% if f.instance and f.instance.image %}
+                    <img src="{{ f.instance.image.url }}" class="w-16 h-16 object-cover mb-2 bg-gray-100">
+                    {% endif %}
+                    {{ f.image }}
+                    {% if f.image.errors %}<p class="text-xs text-red-500 mt-1">{{ f.image.errors }}</p>{% endif %}
+                </div>
+                {% if f.DELETE %}
+                <div class="flex items-center gap-2">
+                    {{ f.DELETE }}
+                    <span class="text-xs text-gray-500">Remove this photo</span>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
     </div>
+    {% endif %}
 
     <div class="flex gap-4 pt-4">
         <button type="submit"

@@ -129,7 +129,7 @@
     <!-- Related Products -->
     {% if related_products %}
     <div class="mt-16 border-t border-gray-100 pt-16">
-        <p class="text-xs tracking-[0.3em] uppercase text-gray-400 mb-8">You May Also Like</p>
+        <p class="text-xs tracking-[0.3em] uppercase text-gray-400 mb-8">{{ related_products_title }}</p>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
             {% for related_product in related_products %}
             <div class="group cursor-pointer"

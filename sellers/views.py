@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.urls import reverse
 from django.contrib import messages
 from .models import Seller
-from .forms import SellerRegistrationForm, SellerProductForm, SellerProductSizeFormSet
+from .forms import SellerRegistrationForm, SellerProductForm, SellerProductSizeFormSet, SellerProductImageFormSet
 from main.models import Product
 from orders.models import Order, OrderItem
 from .services import (
@@ -102,18 +102,22 @@ def product_edit(request, slug):
     if request.method == 'POST':
         form = SellerProductForm(request.POST, request.FILES, instance=product)
         formset = SellerProductSizeFormSet(request.POST, instance=product)
-        if form.is_valid() and formset.is_valid():
+        image_formset = SellerProductImageFormSet(request.POST, request.FILES, instance=product)
+        if form.is_valid() and formset.is_valid() and image_formset.is_valid():
             form.save()
             formset.save()
+            image_formset.save()
             messages.success(request, 'Product updated successfully.')
             return redirect('sellers:products')
     else:
         form = SellerProductForm(instance=product)
         formset = SellerProductSizeFormSet(instance=product)
+        image_formset = SellerProductImageFormSet(instance=product)
 
     return TemplateResponse(request, 'sellers/product_form.html', {
         'form': form,
         'formset': formset,
+        'image_formset': image_formset,
         'seller': seller,
         'product': product,
     })

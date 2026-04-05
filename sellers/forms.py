@@ -26,7 +26,7 @@ class SellerProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = (
-            'name', 'category', 'size_kind', 'color', 'price',
+            'name', 'category', 'subcategory', 'size_kind', 'color', 'price',
             'description', 'main_image',
         )
         widgets = {
@@ -35,6 +35,9 @@ class SellerProductForm(forms.ModelForm):
                 'placeholder': 'Product Name'
             }),
             'category': forms.Select(attrs={
+                'class': 'w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-black',
+            }),
+            'subcategory': forms.Select(attrs={
                 'class': 'w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-black',
             }),
             'size_kind': forms.Select(attrs={
@@ -84,4 +87,13 @@ SellerProductSizeFormSet = inlineformset_factory(
             'min': 0,
         }),
     },
+)
+
+from main.models import ProductImage
+SellerProductImageFormSet = inlineformset_factory(
+    Product,
+    ProductImage,
+    fields=('image',),
+    extra=3,
+    can_delete=True,
 )

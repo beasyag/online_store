@@ -2,8 +2,14 @@ from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView, DetailView
 from django.template.response import TemplateResponse
 from .models import Category, Product, Size, HeroVideo, Subcategory
-from django.db.models import Q, Count
-from orders.models import OrderItem
+from .services import (
+    get_personalized_products,
+    get_recently_viewed_products,
+    get_similar_customer_products,
+    get_trending_products,
+    record_product_view,
+)
+from django.db.models import Q
 
 
 class CatalogView(TemplateView):
@@ -53,6 +59,9 @@ class CatalogView(TemplateView):
 
         filter_params['q'] = query or ''
         products = products.distinct()
+        has_active_filters = bool(category_slug or subcategory_slug or query or any(
+            filter_params.get(key) for key in self.FILTER_MAPPING
+        ))
 
         context.update({
             'products': products,
@@ -61,6 +70,11 @@ class CatalogView(TemplateView):
             'filter_params': filter_params,
             'sizes': Size.objects.all(),
             'search_query': query or '',
+            'catalog_personalized_products': get_personalized_products(
+                user=self.request.user,
+                limit=4,
+                exclude_ids=list(products.values_list('id', flat=True)) if has_active_filters else [],
+            ),
         })
 
         if self.request.GET.get('show_search') == 'true':
@@ -98,33 +112,30 @@ class IndexView(TemplateView):
         context['hero_video'] = HeroVideo.objects.filter(is_active=True).first()
 
         featured_ids = [p.id for p in featured_products]
-        recommended_products = []
-        rec_title = "Trending Now"
-        user = self.request.user
-        
-        if user.is_authenticated:
-            user_items = OrderItem.objects.filter(order__user=user, product__isnull=False)
-            if user_items.exists():
-                bought_product_ids = user_items.values_list('product_id', flat=True)
-                category_ids = user_items.values_list('product__category_id', flat=True).distinct()
-                
-                personal_recs = Product.objects.filter(
-                    category_id__in=category_ids
-                ).exclude(id__in=bought_product_ids).annotate(
-                    order_count=Count('orderitem')
-                ).order_by('-order_count', '-created_at')[:4]
-                
-                recommended_products = list(personal_recs)
-                if recommended_products:
-                    rec_title = "Recommended for You"
-
+        recommended_products = get_personalized_products(
+            user=self.request.user,
+            limit=4,
+            exclude_ids=featured_ids,
+        )
+        continue_exploring_products = get_recently_viewed_products(
+            user=self.request.user,
+            limit=4,
+            exclude_ids=featured_ids,
+        )
+        similar_customer_products = get_similar_customer_products(
+            user=self.request.user,
+            limit=4,
+            exclude_ids=featured_ids,
+        )
+        rec_title = "Recommended for You" if self.request.user.is_authenticated else "Trending Now"
         if not recommended_products:
-            recommended_products = Product.objects.exclude(id__in=featured_ids).annotate(
-                order_count=Count('orderitem')
-            ).order_by('-order_count', '-created_at')[:4]
+            recommended_products = list(get_trending_products(limit=4, exclude_ids=featured_ids))
+            rec_title = "Trending Now"
 
         context['recommended_products'] = recommended_products
         context['rec_title'] = rec_title
+        context['continue_exploring_products'] = continue_exploring_products
+        context['similar_customer_products'] = similar_customer_products
 
         return context
 
@@ -143,9 +154,19 @@ class ProductDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         product = self.object
-        context['related_products'] = Product.objects.filter(
-            category=product.category
-        ).exclude(id=product.id)[:4]
+        personalized_related = get_personalized_products(
+            user=self.request.user,
+            limit=4,
+            exclude_ids=[product.id],
+        )
+        if personalized_related:
+            context['related_products'] = personalized_related
+            context['related_products_title'] = 'Picked for You'
+        else:
+            context['related_products'] = Product.objects.filter(
+                category=product.category
+            ).exclude(id=product.id)[:4]
+            context['related_products_title'] = 'You May Also Like'
         context['current_category'] = product.category.slug
         context['needs_size_selection'] = product.product_sizes.filter(
             stock__gt=0
@@ -154,6 +175,7 @@ class ProductDetailView(DetailView):
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
+        record_product_view(request.user, self.object)
         context = self.get_context_data(**kwargs)
         if request.headers.get('HX-Request'):
             return TemplateResponse(request, 'main/product_detail.html', context)

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
 
@@ -146,3 +147,25 @@ class HeroVideo(models.Model):
 
     def __str__(self):
         return self.title or f"Hero Video {self.id}"
+
+
+class ProductView(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='product_views'
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='views'
+    )
+    view_count = models.PositiveIntegerField(default=0)
+    last_viewed_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'product')
+
+    def __str__(self):
+        return f"{self.user.email} viewed {self.product.name} ({self.view_count})"
