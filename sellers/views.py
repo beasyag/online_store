@@ -9,12 +9,19 @@ from .models import Seller
 from .forms import SellerRegistrationForm, SellerProductForm, SellerProductSizeFormSet
 from main.models import Product
 from orders.models import Order, OrderItem
-from decimal import Decimal
+from .services import (
+    SellerAccessError,
+    get_dashboard_metrics,
+    get_seller_analytics,
+    get_seller_order_detail,
+    get_seller_order_items,
+    require_seller,
+)
 
 
 @login_required(login_url='/users/login')
 def seller_register(request):
-    if hasattr(request.user, 'seller'):
+    if request.user.can_access_seller_dashboard:
         return redirect('sellers:dashboard')
 
     if request.method == 'POST':
@@ -23,8 +30,6 @@ def seller_register(request):
             seller = form.save(commit=False)
             seller.user = request.user
             seller.save()
-            request.user.role = 'seller'
-            request.user.save()
             messages.success(request, 'Application submitted. Awaiting verification.')
             return redirect('sellers:dashboard')
     else:
@@ -35,33 +40,20 @@ def seller_register(request):
 
 @login_required(login_url='/users/login')
 def dashboard(request):
-    if not hasattr(request.user, 'seller'):
+    if not request.user.can_access_seller_dashboard:
         return redirect('sellers:register')
 
-    seller = request.user.seller
-    recent_orders = OrderItem.objects.filter(
-        seller=seller
-    ).select_related('order', 'product').order_by('-order__created_at')[:5]
-
-    context = {
-        'seller': seller,
-        'recent_orders': recent_orders,
-        'total_products': seller.products.count(),
-        'total_orders': OrderItem.objects.filter(seller=seller).count(),
-        'total_revenue': sum(
-            item.seller_amount * item.quantity
-            for item in OrderItem.objects.filter(seller=seller)
-        ),
-    }
+    seller = require_seller(request.user)
+    context = {'seller': seller, **get_dashboard_metrics(seller)}
     return TemplateResponse(request, 'sellers/dashboard.html', context)
 
 
 @login_required(login_url='/users/login')
 def product_list(request):
-    if not hasattr(request.user, 'seller'):
+    if not request.user.can_access_seller_dashboard:
         return redirect('sellers:register')
 
-    seller = request.user.seller
+    seller = require_seller(request.user)
     products = seller.products.order_by('-created_at')
     return TemplateResponse(request, 'sellers/products.html', {
         'seller': seller,
@@ -71,11 +63,11 @@ def product_list(request):
 
 @login_required(login_url='/users/login')
 def product_add(request):
-    if not hasattr(request.user, 'seller'):
+    if not request.user.can_access_seller_dashboard:
         return redirect('sellers:register')
 
-    seller = request.user.seller
-    if not seller.is_verified:
+    seller = require_seller(request.user)
+    if not request.user.can_manage_products_as_seller:
         messages.error(request, 'Your account must be verified before adding products.')
         return redirect('sellers:dashboard')
 
@@ -101,10 +93,10 @@ def product_add(request):
 
 @login_required(login_url='/users/login')
 def product_edit(request, slug):
-    if not hasattr(request.user, 'seller'):
+    if not request.user.can_access_seller_dashboard:
         return redirect('sellers:register')
 
-    seller = request.user.seller
+    seller = require_seller(request.user)
     product = get_object_or_404(Product, slug=slug, seller=seller)
 
     if request.method == 'POST':
@@ -129,10 +121,10 @@ def product_edit(request, slug):
 
 @login_required(login_url='/users/login')
 def product_delete(request, slug):
-    if not hasattr(request.user, 'seller'):
+    if not request.user.can_access_seller_dashboard:
         return redirect('sellers:register')
 
-    seller = request.user.seller
+    seller = require_seller(request.user)
     product = get_object_or_404(Product, slug=slug, seller=seller)
 
     if request.method == 'POST':
@@ -148,13 +140,11 @@ def product_delete(request, slug):
 
 @login_required(login_url='/users/login')
 def order_list(request):
-    if not hasattr(request.user, 'seller'):
+    if not request.user.can_access_seller_dashboard:
         return redirect('sellers:register')
 
-    seller = request.user.seller
-    order_items = OrderItem.objects.filter(
-        seller=seller
-    ).select_related('order', 'product').order_by('-order__created_at')
+    seller = require_seller(request.user)
+    order_items = get_seller_order_items(seller)
 
     return TemplateResponse(request, 'sellers/orders.html', {
         'seller': seller,
@@ -164,12 +154,12 @@ def order_list(request):
 
 @login_required(login_url='/users/login')
 def order_detail(request, order_id):
-    if not hasattr(request.user, 'seller'):
+    if not request.user.can_access_seller_dashboard:
         return redirect('sellers:register')
 
-    seller = request.user.seller
+    seller = require_seller(request.user)
     order = get_object_or_404(Order, id=order_id)
-    items = order.items.filter(seller=seller).select_related('product')
+    items = get_seller_order_detail(seller, order)
 
     return TemplateResponse(request, 'sellers/order_detail.html', {
         'seller': seller,
@@ -180,28 +170,11 @@ def order_detail(request, order_id):
 
 @login_required(login_url='/users/login')
 def analytics(request):
-    if not hasattr(request.user, 'seller'):
+    if not request.user.can_access_seller_dashboard:
         return redirect('sellers:register')
 
-    seller = request.user.seller
-    order_items = OrderItem.objects.filter(seller=seller).select_related('product', 'order')
-
-    total_revenue = sum(item.seller_amount * item.quantity for item in order_items)
-    total_orders = order_items.values('order').distinct().count()
-    total_products = seller.products.count()
-    top_products = (
-        seller.products
-        .annotate_with_sales()  # добавим ниже
-        .order_by('-total_sold')[:5]
-    ) if hasattr(seller.products, 'annotate_with_sales') else []
-
-    context = {
-        'seller': seller,
-        'total_revenue': total_revenue,
-        'total_orders': total_orders,
-        'total_products': total_products,
-        'order_items': order_items,
-    }
+    seller = require_seller(request.user)
+    context = {'seller': seller, **get_seller_analytics(seller)}
     return TemplateResponse(request, 'sellers/analytics.html', context)
 
 

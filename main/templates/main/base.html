@@ -80,7 +80,7 @@
                    class="block text-sm font-medium text-gray-900 uppercase tracking-wide hover:text-gray-500">
                    ORDERS
                 </a>
-                {% if request.user.role == 'seller' %}
+                {% if request.user.can_access_seller_dashboard %}
                 <a href="{% url 'sellers:dashboard' %}"
                    onclick="closeMobileMenu()"
                    class="block text-sm font-medium text-gray-900 uppercase tracking-wide hover:text-gray-500">
@@ -187,7 +187,7 @@
                                class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60">
                                 ORDER HISTORY
                             </a>
-                            {% if request.user.role == 'seller' %}
+                            {% if request.user.can_access_seller_dashboard %}
                             <a href="{% url 'sellers:dashboard' %}"
                                onclick="closeAccountMenu()"
                                class="block text-xs font-bold tracking-[0.15em] uppercase text-white hover:opacity-60">

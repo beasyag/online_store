@@ -50,11 +50,38 @@
                     {% endif %}
                 </div>
                 <p class="text-xs tracking-[0.1em] uppercase font-medium mb-1">{{ product.name }}</p>
-                <p class="text-xs text-gray-500">€{{ product.price }}</p>
+                <p class="text-xs text-gray-500">${{ product.price }}</p>
             </div>
             {% endfor %}
         </div>
     </section>
+
+    <!-- Recommended Products -->
+    {% if recommended_products %}
+    <section class="px-8 py-20 border-b border-gray-100">
+        <div class="flex justify-between items-center mb-10">
+            <p class="text-xs tracking-[0.3em] uppercase text-gray-400">{{ rec_title }}</p>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
+            {% for product in recommended_products %}
+            <div class="group cursor-pointer"
+                 hx-get="{% url 'main:product_detail' product.slug %}"
+                 hx-target="#main-content"
+                 hx-push-url="true">
+                <div class="aspect-[3/4] bg-gray-100 mb-3 overflow-hidden">
+                    {% if product.main_image %}
+                    <img src="{{ product.main_image.url }}"
+                         alt="{{ product.name }}"
+                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    {% endif %}
+                </div>
+                <p class="text-xs tracking-[0.1em] uppercase font-medium mb-1">{{ product.name }}</p>
+                <p class="text-xs text-gray-500">${{ product.price }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
 
     <!-- Promo -->
     <section class="px-8 py-20 text-center">

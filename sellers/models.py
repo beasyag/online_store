@@ -36,10 +36,28 @@ class Seller(models.Model):
                 counter += 1
             self.shop_slug = slug
         super().save(*args, **kwargs)
+        if self.user.role != 'admin' and self.user.role != 'seller':
+            self.user.role = 'seller'
+            self.user.save(update_fields=['role'])
+
+    def delete(self, *args, **kwargs):
+        user = self.user
+        super().delete(*args, **kwargs)
+        if user.role == 'seller':
+            user.role = 'buyer'
+            user.save(update_fields=['role'])
 
     @property
     def is_verified(self):
         return self.status == 'verified'
+
+    @property
+    def can_access_dashboard(self):
+        return True
+
+    @property
+    def can_manage_products(self):
+        return self.is_verified
 
     def __str__(self):
         return self.shop_name

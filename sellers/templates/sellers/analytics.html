@@ -6,14 +6,30 @@
     <h1 class="text-2xl font-medium tracking-tight">Analytics</h1>
 </div>
 
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-12">
     <div class="border border-gray-100 p-6">
         <p class="text-xs tracking-[0.2em] uppercase text-gray-400 mb-3">Total Revenue</p>
-        <p class="text-3xl font-medium">€{{ total_revenue|floatformat:2 }}</p>
+        <p class="text-3xl font-medium">${{ total_revenue|floatformat:2 }}</p>
     </div>
     <div class="border border-gray-100 p-6">
-        <p class="text-xs tracking-[0.2em] uppercase text-gray-400 mb-3">Total Orders</p>
+        <p class="text-xs tracking-[0.2em] uppercase text-gray-400 mb-3">Orders</p>
         <p class="text-3xl font-medium">{{ total_orders }}</p>
+        <p class="text-xs text-gray-400 mt-2">{{ successful_orders }} successful checkouts</p>
+    </div>
+    <div class="border border-gray-100 p-6">
+        <p class="text-xs tracking-[0.2em] uppercase text-gray-400 mb-3">Checkout Conversion</p>
+        <p class="text-3xl font-medium">{{ checkout_conversion|floatformat:2 }}%</p>
+    </div>
+    <div class="border border-gray-100 p-6">
+        <p class="text-xs tracking-[0.2em] uppercase text-gray-400 mb-3">Average Order Value</p>
+        <p class="text-3xl font-medium">${{ average_order_value|floatformat:2 }}</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
+    <div class="border border-gray-100 p-6">
+        <p class="text-xs tracking-[0.2em] uppercase text-gray-400 mb-3">Repeat Customers</p>
+        <p class="text-3xl font-medium">{{ repeat_customers }}</p>
     </div>
     <div class="border border-gray-100 p-6">
         <p class="text-xs tracking-[0.2em] uppercase text-gray-400 mb-3">Products Listed</p>
@@ -24,21 +40,18 @@
 <div class="mb-10">
     <p class="text-xs tracking-[0.3em] uppercase text-gray-400 mb-6">Sales by Product</p>
     <div class="border border-gray-100">
-        <div class="grid grid-cols-3 gap-4 px-6 py-3 border-b border-gray-100">
-            <p class="text-xs tracking-[0.2em] uppercase text-gray-400 col-span-2">Product</p>
+        <div class="grid grid-cols-4 gap-4 px-6 py-3 border-b border-gray-100">
+            <p class="text-xs tracking-[0.2em] uppercase text-gray-400">Product</p>
+            <p class="text-xs tracking-[0.2em] uppercase text-gray-400">Orders</p>
+            <p class="text-xs tracking-[0.2em] uppercase text-gray-400">Units</p>
             <p class="text-xs tracking-[0.2em] uppercase text-gray-400">Revenue</p>
         </div>
-        {% regroup order_items by product_name as product_groups %}
-        {% for group in product_groups %}
-        <div class="grid grid-cols-3 gap-4 px-6 py-4 border-b border-gray-50">
-            <p class="text-sm col-span-2">{{ group.grouper }}</p>
-            <p class="text-sm">
-                €{% with total=0 %}
-                {% for item in group.list %}
-                {{ item.seller_amount|add:total }}
-                {% endfor %}
-                {% endwith %}
-            </p>
+        {% for product in sales_by_product %}
+        <div class="grid grid-cols-4 gap-4 px-6 py-4 border-b border-gray-50">
+            <p class="text-sm">{{ product.product_name }}</p>
+            <p class="text-sm">{{ product.total_orders }}</p>
+            <p class="text-sm">{{ product.total_units }}</p>
+            <p class="text-sm">${{ product.total_revenue|floatformat:2 }}</p>
         </div>
         {% empty %}
         <div class="px-6 py-12 text-center">

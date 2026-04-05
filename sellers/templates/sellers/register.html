@@ -8,6 +8,14 @@
         Your application will be reviewed. You will be notified once verified.
     </p>
 
+    {% if form.non_field_errors %}
+    <div class="border border-red-200 bg-red-50 p-4 mb-6">
+        {% for error in form.non_field_errors %}
+        <p class="text-sm text-red-700">{{ error }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <form method="post" enctype="multipart/form-data" class="space-y-6">
         {% csrf_token %}
 
@@ -30,6 +38,7 @@
         <div>
             <label class="block text-xs tracking-[0.2em] uppercase text-gray-500 mb-2">Logo</label>
             {{ form.logo }}
+            <p class="text-xs text-gray-400 mt-2">Optional, but a logo helps the shop feel complete once approved.</p>
             {% if form.logo.errors %}
                 <p class="text-xs text-red-500 mt-1">{{ form.logo.errors }}</p>
             {% endif %}

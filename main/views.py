@@ -2,22 +2,8 @@ from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView, DetailView
 from django.template.response import TemplateResponse
 from .models import Category, Product, Size, HeroVideo, Subcategory
-from django.db.models import Q
-
-class IndexView(TemplateView):
-    template_name = 'main/base.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['categories'] = Category.objects.all()
-        context['current_category'] = None
-        return context
-
-    def get(self, request, *args, **kwargs):
-        context = self.get_context_data(**kwargs)
-        if request.headers.get('HX-Request'):
-            return TemplateResponse(request, 'main/home_content.html', context)
-        return TemplateResponse(request, self.template_name, context)
+from django.db.models import Q, Count
+from orders.models import OrderItem
 
 
 class CatalogView(TemplateView):
@@ -101,13 +87,45 @@ class CatalogView(TemplateView):
 
 
 class IndexView(TemplateView):
-    template_name = 'main/index.html'  # ← было base.html
+    template_name = 'main/index.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['categories'] = Category.objects.all()
         context['current_category'] = None
-        context['featured_products'] = Product.objects.order_by('-created_at')[:4]
+        featured_products = Product.objects.order_by('-created_at')[:4]
+        context['featured_products'] = featured_products
         context['hero_video'] = HeroVideo.objects.filter(is_active=True).first()
+
+        featured_ids = [p.id for p in featured_products]
+        recommended_products = []
+        rec_title = "Trending Now"
+        user = self.request.user
+        
+        if user.is_authenticated:
+            user_items = OrderItem.objects.filter(order__user=user, product__isnull=False)
+            if user_items.exists():
+                bought_product_ids = user_items.values_list('product_id', flat=True)
+                category_ids = user_items.values_list('product__category_id', flat=True).distinct()
+                
+                personal_recs = Product.objects.filter(
+                    category_id__in=category_ids
+                ).exclude(id__in=bought_product_ids).annotate(
+                    order_count=Count('orderitem')
+                ).order_by('-order_count', '-created_at')[:4]
+                
+                recommended_products = list(personal_recs)
+                if recommended_products:
+                    rec_title = "Recommended for You"
+
+        if not recommended_products:
+            recommended_products = Product.objects.exclude(id__in=featured_ids).annotate(
+                order_count=Count('orderitem')
+            ).order_by('-order_count', '-created_at')[:4]
+
+        context['recommended_products'] = recommended_products
+        context['rec_title'] = rec_title
+
         return context
 
     def get(self, request, *args, **kwargs):
@@ -118,7 +136,7 @@ class IndexView(TemplateView):
 
 class ProductDetailView(DetailView):
     model = Product
-    template_name = 'main/product_page.html'  # ← было base.html
+    template_name = 'main/product_page.html'
     slug_field = 'slug'
     slug_url_kwarg = 'slug'
 

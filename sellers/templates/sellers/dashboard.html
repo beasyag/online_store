@@ -6,11 +6,23 @@
     <h1 class="text-2xl font-medium tracking-tight">Dashboard</h1>
 </div>
 
+{% if not request.user.can_manage_products_as_seller %}
+<div class="border border-amber-200 bg-amber-50 p-6 mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+        <p class="text-xs tracking-[0.2em] uppercase text-amber-700 mb-2">Verification Required</p>
+        <p class="text-sm text-amber-800">Your shop can receive messages and view operational data, but adding products is disabled until the seller status becomes verified.</p>
+    </div>
+    <a href="{% url 'sellers:products' %}" class="border border-amber-300 px-5 py-3 text-xs tracking-[0.2em] uppercase text-amber-800 hover:bg-amber-100 transition-colors">
+        Review Product Area
+    </a>
+</div>
+{% endif %}
+
 <!-- Stats -->
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
     <div class="border border-gray-100 p-6">
         <p class="text-xs tracking-[0.2em] uppercase text-gray-400 mb-3">Total Revenue</p>
-        <p class="text-3xl font-medium">€{{ total_revenue|floatformat:2 }}</p>
+        <p class="text-3xl font-medium">${{ total_revenue|floatformat:2 }}</p>
     </div>
     <div class="border border-gray-100 p-6">
         <p class="text-xs tracking-[0.2em] uppercase text-gray-400 mb-3">Total Orders</p>
@@ -27,7 +39,7 @@
     <div class="flex justify-between items-center">
         <div>
             <p class="text-xs tracking-[0.2em] uppercase text-gray-400 mb-1">Available Balance</p>
-            <p class="text-2xl font-medium">€{{ seller.balance|floatformat:2 }}</p>
+            <p class="text-2xl font-medium">${{ seller.balance|floatformat:2 }}</p>
         </div>
         <a href="{% url 'payouts:list' %}"
            class="border border-gray-300 px-6 py-2 text-xs tracking-[0.2em] uppercase hover:bg-black hover:text-white hover:border-black transition-colors">
@@ -58,9 +70,11 @@
         <div class="grid grid-cols-4 gap-4 px-6 py-4 border-b border-gray-50 hover:bg-gray-50 transition-colors">
             <p class="text-sm">{{ item.product_name }}</p>
             <p class="text-sm text-gray-500">#{{ item.order.id }}</p>
-            <p class="text-sm">€{{ item.seller_amount|floatformat:2 }}</p>
+            <p class="text-sm">${{ item.get_total_price|floatformat:2 }}</p>
             <p class="text-xs tracking-wide uppercase
                {% if item.order.status == 'delivered' %}text-green-600
+               {% elif item.order.status == 'paid' or item.order.status == 'shipped' %}text-blue-600
+               {% elif item.order.status == 'refunded' %}text-amber-600
                {% elif item.order.status == 'cancelled' %}text-red-500
                {% else %}text-gray-500{% endif %}">
                 {{ item.order.status }}
@@ -70,7 +84,8 @@
     </div>
     {% else %}
     <div class="border border-gray-100 p-12 text-center">
-        <p class="text-sm text-gray-400 tracking-wide">No orders yet.</p>
+        <p class="text-sm text-gray-400 tracking-wide mb-3">No orders yet.</p>
+        <p class="text-xs text-gray-400">When customers buy your products, the latest orders will appear here.</p>
     </div>
     {% endif %}
 </div>

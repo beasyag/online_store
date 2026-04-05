@@ -73,7 +73,7 @@
             {% if product.color %}
             <p class="text-xs text-gray-400 mb-1">{{ product.color|upper }}</p>
             {% endif %}
-            <p class="text-xs text-gray-600">€{{ product.price }}</p>
+            <p class="text-xs text-gray-600">${{ product.price }}</p>
         </div>
         {% endfor %}
     </div>

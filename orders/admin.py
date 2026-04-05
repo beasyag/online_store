@@ -29,15 +29,26 @@ class OrderAdmin(admin.ModelAdmin):
     list_filter = ('status', 'first_name', 'last_name')
     search_fields = ('email', 'first_name', 'last_name')
     date_hierarchy = 'created_at'
-    readonly_fields = ('created_at', 'updated_at', 'total_price', 'stripe_payment_intent_id',)
+    readonly_fields = (
+        'created_at', 'updated_at', 'total_price', 'stripe_payment_intent_id',
+        'stripe_checkout_session_id', 'stripe_refund_id', 'paid_at',
+        'cancelled_at', 'refunded_at', 'seller_balance_applied_at',
+        'seller_balance_reversed_at', 'refunded_amount',
+    )
     inlines = [OrderItemInline]
+    actions = ['mark_shipped', 'mark_delivered', 'mark_refunded']
 
     fieldsets = (
         ('Order Information', {
             'fields': ('user', 'first_name', 'last_name', 'email', 'company', 'address1', 'address2', 'city', 'country', 'province', 'postal_code', 'phone', 'special_instructions', 'total_price'),
         }),
         ('Payment and Status', {
-            'fields': ('status', 'payment_provider', 'stripe_payment_intent_id'),
+            'fields': (
+                'status', 'payment_provider', 'stripe_checkout_session_id',
+                'stripe_payment_intent_id', 'stripe_refund_id', 'refunded_amount',
+                'paid_at', 'cancelled_at', 'refunded_at',
+                'seller_balance_applied_at', 'seller_balance_reversed_at',
+            ),
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
@@ -49,3 +60,21 @@ class OrderAdmin(admin.ModelAdmin):
         if obj:
             return self.readonly_fields + ('user', 'first_name', 'last_name', 'email', 'company', 'address1', 'address2', 'city', 'county', 'province', 'postal_code', 'phone')
         return self.readonly_fields
+
+    def mark_shipped(self, request, queryset):
+        updated = queryset.filter(status='paid').update(status='shipped')
+        self.message_user(request, f'{updated} order(s) marked as shipped.')
+    mark_shipped.short_description = 'Mark paid orders as shipped'
+
+    def mark_delivered(self, request, queryset):
+        updated = queryset.filter(status='shipped').update(status='delivered')
+        self.message_user(request, f'{updated} order(s) marked as delivered.')
+    mark_delivered.short_description = 'Mark shipped orders as delivered'
+
+    def mark_refunded(self, request, queryset):
+        refunded = 0
+        for order in queryset:
+            if order.mark_refunded():
+                refunded += 1
+        self.message_user(request, f'{refunded} order(s) marked as refunded.')
+    mark_refunded.short_description = 'Refund selected orders and reverse seller balance'

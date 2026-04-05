@@ -17,7 +17,7 @@
 </div>
 
 <!-- Request Payout Form -->
-{% if seller.balance > 0 %}
+{% if seller.balance > 0 and seller.is_verified %}
 <div class="border border-gray-100 p-6 mb-10">
     <p class="text-xs tracking-[0.2em] uppercase text-gray-400 mb-6">Request Payout</p>
     <form method="post" action="{% url 'payouts:request' %}" class="flex gap-4 items-end">
@@ -44,6 +44,16 @@
         </button>
     </form>
 </div>
+{% elif not seller.is_verified %}
+<div class="border border-amber-200 bg-amber-50 p-6 mb-10">
+    <p class="text-xs tracking-[0.2em] uppercase text-amber-700 mb-2">Payouts Locked</p>
+    <p class="text-sm text-amber-800">Payout requests are available after seller verification is complete.</p>
+</div>
+{% else %}
+<div class="border border-gray-100 p-6 mb-10">
+    <p class="text-xs tracking-[0.2em] uppercase text-gray-400 mb-2">No Available Balance</p>
+    <p class="text-sm text-gray-500">You can request a payout once completed orders add funds to your seller balance.</p>
+</div>
 {% endif %}
 
 <!-- Payout History -->
@@ -64,6 +74,7 @@
         <p class="text-xs tracking-wide uppercase
            {% if payout.status == 'completed' %}text-green-600
            {% elif payout.status == 'failed' %}text-red-500
+           {% elif payout.status == 'cancelled' %}text-amber-600
            {% elif payout.status == 'processing' %}text-blue-500
            {% else %}text-gray-500{% endif %}">
             {{ payout.status }}
@@ -73,7 +84,8 @@
 </div>
 {% else %}
 <div class="border border-gray-100 p-12 text-center">
-    <p class="text-sm text-gray-400">No payouts yet.</p>
+    <p class="text-sm text-gray-400 mb-3">No payouts yet.</p>
+    <p class="text-xs text-gray-400">Your payout history will appear here after the first request is submitted.</p>
 </div>
 {% endif %}
 {% endblock %}

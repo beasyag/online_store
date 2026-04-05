@@ -16,10 +16,20 @@ class Category(models.Model):
 
 
 class Size(models.Model):
+    class KindChoices(models.TextChoices):
+        CLOTHING = 'clothing', 'Clothing'
+        SHOES = 'shoes', 'Shoes'
+        ACCESSORIES = 'accessories', 'Accessories'
+
     name = models.CharField(max_length=20)
+    kind = models.CharField(
+        max_length=15,
+        choices=KindChoices.choices,
+        default=KindChoices.CLOTHING
+    )
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.get_kind_display()})"
 
 
 class Subcategory(models.Model):
@@ -47,16 +57,17 @@ class Subcategory(models.Model):
 
 
 class Product(models.Model):
-    class SizeKind(models.TextChoices):
-        CLOTHING = 'clothing', 'Clothing'
-        SHOES = 'shoes', 'Shoes'
-
     seller = models.ForeignKey(
         'sellers.Seller',
         on_delete=models.CASCADE,
         related_name='products',
         null=True,
         blank=True
+    )
+    size_kind = models.CharField(
+        max_length=15,
+        choices=Size.KindChoices.choices,
+        default=Size.KindChoices.CLOTHING
     )
     subcategory = models.ForeignKey(
         'Subcategory',

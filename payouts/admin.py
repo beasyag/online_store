@@ -13,21 +13,19 @@ class PayoutAdmin(admin.ModelAdmin):
     actions = ['mark_completed', 'mark_processing', 'mark_failed']
 
     def mark_completed(self, request, queryset):
-        queryset.update(status='completed')
+        for payout in queryset:
+            payout.mark_completed()
         self.message_user(request, f'{queryset.count()} payout(s) marked as completed.')
     mark_completed.short_description = 'Mark as completed'
 
     def mark_processing(self, request, queryset):
-        queryset.update(status='processing')
+        for payout in queryset:
+            payout.mark_processing()
         self.message_user(request, f'{queryset.count()} payout(s) marked as processing.')
     mark_processing.short_description = 'Mark as processing'
 
     def mark_failed(self, request, queryset):
-        queryset.update(status='failed')
-        # ← возвращаем баланс продавцу при неудаче
         for payout in queryset:
-            payout.seller.balance += payout.amount
-            payout.seller.save()
-        queryset.update(status='failed')
+            payout.mark_failed()
         self.message_user(request, f'{queryset.count()} payout(s) marked as failed.')
     mark_failed.short_description = 'Mark as failed'

@@ -1,7 +1,7 @@
 <div class="space-y-3 border-t pt-4">
     <div class="flex justify-between text-sm">
         <span class="text-gray-700">Итого • {{ cart|length }} товар{{ cart|length|pluralize:"а,ов" }}</span>
-        <span class="font-medium">€{{ total_price }}</span>
+        <span class="font-medium">${{ total_price }}</span>
     </div>
 
     <div class="flex justify-between text-sm">
@@ -12,7 +12,7 @@
     {% if discount > 0 %}
     <div class="flex justify-between text-sm">
         <span class="text-gray-700">Скидка ({{ discount }}%)</span>
-        <span class="font-medium">-€{{ total_price|sub:discounted_price }}</span>
+        <span class="font-medium">-${{ total_price|sub:discounted_price }}</span>
     </div>
     {% endif %}
 
@@ -20,7 +20,7 @@
         <span>Итого</span>
         <div class="text-right">
             <span class="text-sm text-gray-600">EUR </span>
-            <span>€{{ discounted_price }}</span>
+            <span>${{ discounted_price }}</span>
         </div>
     </div>
 </div>

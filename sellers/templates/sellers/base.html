@@ -3,6 +3,16 @@
 {% block content %}
 <div class="min-h-screen pt-24">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {% if messages %}
+        <div class="mb-6 space-y-3">
+            {% for message in messages %}
+            <div class="border px-4 py-3 text-sm {% if message.tags == 'error' %}border-red-200 bg-red-50 text-red-700{% elif message.tags == 'success' %}border-green-200 bg-green-50 text-green-700{% else %}border-gray-200 bg-gray-50 text-gray-700{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         <div class="grid grid-cols-1 md:grid-cols-5 gap-8">
 
             <!-- Sidebar -->
@@ -11,6 +21,12 @@
                     <p class="text-xs tracking-[0.3em] uppercase text-gray-400 mb-6">
                         {{ seller.shop_name }}
                     </p>
+                    <div class="mb-6 flex items-center justify-between border-b border-gray-100 pb-4">
+                        <span class="text-xs tracking-[0.2em] uppercase text-gray-400">Seller Status</span>
+                        <span class="text-xs tracking-[0.2em] uppercase {% if seller.status == 'verified' %}text-green-600{% elif seller.status == 'pending' %}text-amber-600{% elif seller.status == 'rejected' %}text-red-600{% else %}text-gray-500{% endif %}">
+                            {{ seller.status }}
+                        </span>
+                    </div>
                     <nav class="space-y-4">
                         <a href="{% url 'sellers:dashboard' %}"
                            class="block text-sm tracking-wide uppercase transition-colors
@@ -52,15 +68,21 @@
                 </div>
 
                 {% if seller.status == 'pending' %}
-                <div class="mt-4 border border-gray-200 p-4">
-                    <p class="text-xs text-gray-500 tracking-wide">
-                        Your account is pending verification.
+                <div class="mt-4 border border-amber-200 bg-amber-50 p-4">
+                    <p class="text-xs text-amber-700 tracking-wide">
+                        Your seller application is pending review. You can access the dashboard, orders and messages, but product management stays locked until verification.
                     </p>
                 </div>
                 {% elif seller.status == 'rejected' %}
-                <div class="mt-4 border border-red-200 p-4">
-                    <p class="text-xs text-red-500 tracking-wide">
-                        Your account was rejected.
+                <div class="mt-4 border border-red-200 bg-red-50 p-4">
+                    <p class="text-xs text-red-600 tracking-wide">
+                        Your seller application was rejected. Review your shop details and contact support before listing products.
+                    </p>
+                </div>
+                {% elif seller.status == 'suspended' %}
+                <div class="mt-4 border border-gray-300 bg-gray-50 p-4">
+                    <p class="text-xs text-gray-600 tracking-wide">
+                        Your seller account is suspended. Dashboard access is available for review only.
                     </p>
                 </div>
                 {% endif %}

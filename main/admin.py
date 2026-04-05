@@ -34,7 +34,7 @@ class ProductAdmin(admin.ModelAdmin):
         (None, {
             'fields': (
                 'seller', 'name', 'slug', 'category', 'subcategory',
-                'price', 'color', 'description', 'main_image',
+                'size_kind', 'price', 'color', 'description', 'main_image',
             )
         }),
     )
@@ -46,7 +46,8 @@ class CategoryAdmin(admin.ModelAdmin):
     inlines = [SubcategoryInline]
 
 class SizeAdmin(admin.ModelAdmin):
-    list_display = ['name']
+    list_display = ['name', 'kind']
+    list_filter = ['kind']
 
 
 class HeroVideoAdmin(admin.ModelAdmin):

@@ -23,9 +23,11 @@
             <p class="text-sm font-medium">{{ item.product_name }}</p>
             <p class="text-xs text-gray-400">{{ item.size_name }} × {{ item.quantity }}</p>
         </div>
-        <p class="text-sm">€{{ item.seller_amount|floatformat:2 }}</p>
+        <p class="text-sm">€{{ item.get_total_price|floatformat:2 }}</p>
         <p class="text-xs tracking-wide uppercase
            {% if item.order.status == 'delivered' %}text-green-600
+           {% elif item.order.status == 'paid' or item.order.status == 'shipped' %}text-blue-600
+           {% elif item.order.status == 'refunded' %}text-amber-600
            {% elif item.order.status == 'cancelled' %}text-red-500
            {% else %}text-gray-500{% endif %}">
             {{ item.order.status }}
@@ -35,7 +37,8 @@
 </div>
 {% else %}
 <div class="border border-gray-100 p-16 text-center">
-    <p class="text-sm text-gray-400 tracking-wide">No orders yet.</p>
+    <p class="text-sm text-gray-400 tracking-wide mb-3">No orders yet.</p>
+    <p class="text-xs text-gray-400">Order lines will appear here as soon as customers complete checkout.</p>
 </div>
 {% endif %}
 {% endblock %}

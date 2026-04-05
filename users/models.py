@@ -51,12 +51,33 @@ class CustomUser(AbstractUser):
     REQUIRED_FIELDS = ['first_name', 'last_name']
 
     @property
+    def seller_profile(self):
+        return getattr(self, 'seller', None)
+
+    @property
     def is_seller(self):
-        return self.role == 'seller' and hasattr(self, 'seller')
+        return self.seller_profile is not None
+
+    @property
+    def seller_status(self):
+        seller = self.seller_profile
+        return seller.status if seller else None
 
     @property
     def is_verified_seller(self):
-        return self.is_seller and self.seller.is_verified
+        return self.seller_status == 'verified'
+
+    @property
+    def has_pending_seller_application(self):
+        return self.seller_status == 'pending'
+
+    @property
+    def can_access_seller_dashboard(self):
+        return self.is_seller
+
+    @property
+    def can_manage_products_as_seller(self):
+        return self.is_verified_seller
 
     def __str__(self):
         return self.email

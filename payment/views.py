@@ -1,5 +1,7 @@
 import stripe
+from decimal import Decimal
 from django.conf import settings
+from django.db import transaction
 from django.shortcuts import redirect, get_object_or_404, render
 from django.http import HttpResponse
 from django.template.response import TemplateResponse
@@ -17,7 +19,7 @@ def create_stripe_checkout_session(order, cart, request):
     for item in cart.items.select_related('product', 'product_size__size'):
         line_items.append({
             'price_data': {
-                'currency': 'eur',  # ← единая валюта
+                'currency': 'usd',  # ← единая валюта
                 'product_data': {
                     'name': f'{item.product.name} - {item.product_size.size.name}',
                 },
@@ -27,7 +29,6 @@ def create_stripe_checkout_session(order, cart, request):
         })
 
     checkout_session = stripe.checkout.Session.create(
-        payment_method_types=['card'],
         line_items=line_items,
         mode='payment',
         success_url=(
@@ -44,8 +45,9 @@ def create_stripe_checkout_session(order, cart, request):
     )
 
     order.stripe_payment_intent_id = checkout_session.payment_intent
+    order.stripe_checkout_session_id = checkout_session.id
     order.payment_provider = 'stripe'
-    order.save()
+    order.save(update_fields=['stripe_payment_intent_id', 'stripe_checkout_session_id', 'payment_provider', 'updated_at'])
 
     return checkout_session
 
@@ -65,20 +67,48 @@ def stripe_webhook(request):
     except stripe.error.SignatureVerificationError:
         return HttpResponse(status=400)
 
-    if event['type'] == 'checkout.session.completed':
+    event_type = event['type']
+
+    if event_type == 'checkout.session.completed':
         session = event['data']['object']
         order_id = session['metadata'].get('order_id')
         try:
-            order = Order.objects.get(id=order_id)
-            order.status = 'processing'
-            order.stripe_payment_intent_id = session.get('payment_intent')
-            order.save()
-            # ← начислить баланс каждому продавцу
-            for item in order.items.select_related('seller').all():
-                if item.seller and item.seller_amount:
-                    item.seller.balance += item.seller_amount * item.quantity
-                    item.seller.save()
+            with transaction.atomic():
+                order = Order.objects.select_for_update().get(id=order_id)
+                order.mark_paid(
+                    payment_intent_id=session.get('payment_intent'),
+                    checkout_session_id=session.get('id'),
+                )
+        except Order.DoesNotExist:
+            return HttpResponse(status=400)
 
+    elif event_type == 'checkout.session.expired':
+        session = event['data']['object']
+        order_id = session['metadata'].get('order_id')
+        try:
+            with transaction.atomic():
+                order = Order.objects.select_for_update().get(id=order_id)
+                order.mark_cancelled()
+        except Order.DoesNotExist:
+            return HttpResponse(status=400)
+
+    elif event_type == 'charge.refunded':
+        charge = event['data']['object']
+        payment_intent_id = charge.get('payment_intent')
+        try:
+            with transaction.atomic():
+                order = Order.objects.select_for_update().get(
+                    stripe_payment_intent_id=payment_intent_id
+                )
+                amount_refunded = charge.get('amount_refunded') or 0
+                amount_total = charge.get('amount') or 0
+                if amount_total and amount_refunded >= amount_total:
+                    refunds = charge.get('refunds', {}).get('data', [])
+                    refund_id = refunds[0].get('id') if refunds else None
+                    order.mark_refunded(
+                        refund_id=refund_id,
+                        refunded_amount=Decimal(amount_refunded) / Decimal('100'),
+                    )
         except Order.DoesNotExist:
             return HttpResponse(status=400)
 
@@ -100,7 +130,7 @@ def stripe_success(request):
             return TemplateResponse(request, 'payment/stripe_success_content.html', context)
         return render(request, 'payment/stripe_success.html', context)
 
-    except Exception as e:
+    except Exception:
         return redirect('main:index')
 
 
@@ -110,8 +140,7 @@ def stripe_cancel(request):
         return redirect('orders:checkout')
 
     order = get_object_or_404(Order, id=order_id)
-    order.status = 'cancelled'  # ← исправлено с 'canceled'
-    order.save()
+    order.mark_cancelled()
 
     context = {'order': order}
     if request.headers.get('HX-Request'):

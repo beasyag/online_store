@@ -11,8 +11,19 @@
        class="bg-black text-white px-6 py-3 text-xs tracking-[0.2em] uppercase hover:bg-gray-800 transition-colors">
         + Add Product
     </a>
+    {% else %}
+    <span class="border border-gray-200 px-6 py-3 text-xs tracking-[0.2em] uppercase text-gray-400">
+        Verification Required
+    </span>
     {% endif %}
 </div>
+
+{% if not seller.is_verified %}
+<div class="border border-amber-200 bg-amber-50 p-5 mb-8">
+    <p class="text-xs tracking-[0.2em] uppercase text-amber-700 mb-2">Product Listing Locked</p>
+    <p class="text-sm text-amber-800">You can review existing inventory here, but creating or updating live listings should wait until the account is verified.</p>
+</div>
+{% endif %}
 
 {% if products %}
 <div class="border border-gray-100">
@@ -36,7 +47,7 @@
             <p class="text-sm font-medium">{{ product.name }}</p>
         </div>
         <p class="text-sm text-gray-500">{{ product.category.name }}</p>
-        <p class="text-sm">€{{ product.price }}</p>
+        <p class="text-sm">€{{ product.price|floatformat:2 }}</p>
         <div class="flex gap-3">
             <a href="{% url 'sellers:product_edit' product.slug %}"
                class="text-xs tracking-wide uppercase text-gray-500 hover:text-gray-900">
@@ -52,14 +63,15 @@
 </div>
 {% else %}
 <div class="border border-gray-100 p-16 text-center">
-    <p class="text-sm text-gray-400 tracking-wide mb-6">No products yet.</p>
+    <p class="text-sm text-gray-400 tracking-wide mb-3">No products yet.</p>
     {% if seller.is_verified %}
+    <p class="text-xs text-gray-400 mb-6">Start with one strong listing and clear stock data.</p>
     <a href="{% url 'sellers:product_add' %}"
        class="inline-block border border-gray-300 px-6 py-3 text-xs tracking-[0.2em] uppercase hover:bg-black hover:text-white hover:border-black transition-colors">
         Add your first product
     </a>
     {% else %}
-    <p class="text-xs text-gray-400">Your account must be verified to add products.</p>
+    <p class="text-xs text-gray-400">Your account must be verified before you can create the first listing.</p>
     {% endif %}
 </div>
 {% endif %}
