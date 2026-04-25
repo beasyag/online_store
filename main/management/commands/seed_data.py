@@ -1,3 +1,4 @@
+import requests
 import random
 from io import BytesIO
 from PIL import Image
@@ -26,7 +27,22 @@ class Command(BaseCommand):
         fake = Faker()
 
         # Helper to generate images
-        def generate_image(text, size=(800, 800)):
+        def generate_image(text, size=(800, 800), keyword=None):
+            if not keyword:
+                # Try to extract a meaningful keyword from text
+                keyword = slugify(text).split('-')[0] or "product"
+            
+            for attempt in range(3):  # Try 3 times
+                try:
+                    url = f"https://loremflickr.com/{size[0]}/{size[1]}/{keyword}"
+                    response = requests.get(url, timeout=20)  # Increased timeout
+                    if response.status_code == 200:
+                        return ContentFile(response.content, name=f'{slugify(text)}_{random.randint(1000, 9999)}.jpg')
+                except Exception as e:
+                    if attempt == 2:
+                        self.stdout.write(self.style.ERROR(f"Error fetching image for '{keyword}' after 3 attempts: {e}"))
+            
+            # Fallback to solid color
             color = (random.randint(50, 200), random.randint(50, 200), random.randint(50, 200))
             image = Image.new('RGB', size, color=color)
             img_io = BytesIO()
@@ -145,13 +161,16 @@ class Command(BaseCommand):
                     description=fake.text(),
                     color=fake.color_name()
                 )
-                product.main_image.save("prod.jpg", generate_image(prod_name))
+                
+                # Use category name as keyword for better images
+                img_keyword = cat.name.lower()
+                product.main_image.save("prod.jpg", generate_image(prod_name, keyword=img_keyword))
                 all_products.append(product)
 
                 # Extra images
                 for _ in range(random.randint(0, 2)):
                     img = ProductImage(product=product)
-                    img.image.save("extra.jpg", generate_image(prod_name + " extra"))
+                    img.image.save("extra.jpg", generate_image(prod_name + " extra", keyword=img_keyword))
                 
                 # Sizes
                 if size_kind == Size.KindChoices.SHOES:
